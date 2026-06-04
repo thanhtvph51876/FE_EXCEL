@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Office App Manifest Office version 1.1 -->
+<OfficeApp 
+  xmlns="http://schemas.microsoft.com/office/appshere/1.1" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" 
+  xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+  xsi:type="TaskPaneApp">
+  
+  <!-- Unique ID for the Add-in -->
+  <Id>d258b5cc-4c07-4f65-8bba-c8b1a8d0526a</Id>
+  
+  <Version>1.0.0.0</Version>
+  <ProviderName>ExcelAI Provider</ProviderName>
+  <DefaultLocale>vi-VN</DefaultLocale>
+  
+  <DisplayName DefaultValue="ExcelAI Bot" />
+  <Description DefaultValue="Trợ lý AI đỉnh cao viết công thức, tạo mã VBA, và phân tích dữ liệu trực tiếp trên bảng tính Excel của bạn."/>
+  
+  <!-- Icon for the Add-in -->
+  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
+  <SupportUrl DefaultValue="https://excelai.com/support" />
+  
+  <!-- Host specifications (Excel Workbook) -->
+  <Hosts>
+    <Host Name="Workbook" />
+  </Hosts>
+  
+  <DefaultSettings>
+    <!-- Point to the local dev server hosting our index.html -->
+    <SourceLocation DefaultValue="https://localhost:3000/index.html" />
+  </DefaultSettings>
+  
+  <!-- Request read/write permissions to manipulate cells and sheets -->
+  <Permissions>ReadWriteDocument</Permissions>
+  
+  <!-- Version Overrides for modern Office clients UI (Ribbon buttons) -->
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Hosts>
+      <Host xsi:type="Workbook">
+        <DesktopFormFactor>
+          <!-- Custom Ribbon Group -->
+          <ExtensionPoint xsi:type="PrimaryCommandSurface">
+            <OfficeTab id="TabHome">
+              <Group id="ExcelAiGroup">
+                <Label DefaultValue="ExcelAI Assistant" />
+                <Icon>
+                  <bt:Image size="16" resid="Icon.16x16"/>
+                  <bt:Image size="32" resid="Icon.32x32"/>
+                  <bt:Image size="80" resid="Icon.80x80"/>
+                </Icon>
+                
+                <!-- Ribbon Button to show Taskpane -->
+                <Control xsi:type="Button" id="ExcelAi.ShowTaskpane">
+                  <Label DefaultValue="Mở ExcelAI" />
+                  <Supertip>
+                    <Title DefaultValue="ExcelAI Assistant" />
+                    <Description DefaultValue="Mở thanh bên Trợ lý AI hỗ trợ sinh công thức, VBA và phân tích số liệu." />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>Office.Outlook.Window.SidePane</TaskpaneId>
+                    <SourceLocation resid="Taskpane.Url" />
+                  </Action>
+                </Control>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+    
+    <Resources>
+      <bt:Images>
+        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/icon-16.png" />
+        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/assets/icon-32.png" />
+        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/assets/icon-80.png" />
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/index.html" />
+      </bt:Urls>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>
