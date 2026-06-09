@@ -1,67 +1,32 @@
-/* ==========================================================================
-   EXCELAI BOT - DATA CHECKING SERVICE (MOCK)
-   ========================================================================== */
-
-import { fileService } from './fileService.js';
+import { aiService } from "./aiService.js";
+import { fileService } from "./fileService.js";
 
 export const dataCheckService = {
-    runChecks(fileObj, rules = []) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                if (!fileObj) {
-                    resolve({
-                        totalRows: 0,
-                        totalCols: 0,
-                        totalErrors: 0,
-                        riskLevel: "Thấp",
-                        errors: []
-                    });
-                    return;
-                }
+    async runChecks(fileObj, rules = []) {
+        if (!fileObj) {
+            return { totalRows: 0, totalCols: 0, totalErrors: 0, riskLevel: "Thấp", errors: [] };
+        }
 
-                // Call validation in fileService
-                const errors = fileService.findDetailedErrors(fileObj.headers, fileObj.rows);
-                
-                // Filter errors based on active rules if specified
-                const filteredErrors = errors.filter(err => {
-                    if (rules.length === 0) return true;
-                    // Map rules to internal error types
-                    const typeLower = err.errorType.toLowerCase();
-                    const descLower = err.suggestion.toLowerCase();
-                    
-                    return rules.some(rule => {
-                        const ruleLower = rule.toLowerCase();
-                        if (ruleLower === "missing values" && typeLower.includes("trống")) return true;
-                        if (ruleLower === "duplicate rows" && typeLower.includes("trùng")) return true;
-                        if (ruleLower === "invalid email" && descLower.includes("email")) return true;
-                        if (ruleLower === "invalid phone" && descLower.includes("sđt")) return true;
-                        if (ruleLower === "invalid date" && descLower.includes("ngày")) return true;
-                        if (ruleLower === "negative amount" && descLower.includes("âm")) return true;
-                        return false;
-                    });
-                });
+        if (fileObj.id) {
+            const result = await aiService.runDataCheck(fileObj.id);
+            return {
+                totalRows: result.scannedRows,
+                totalCols: fileObj.colCount,
+                totalErrors: result.errors.length,
+                riskLevel: result.healthScore >= 90 ? "Thấp" : result.healthScore >= 70 ? "Trung bình" : "Cao",
+                errors: result.errors,
+                aiNarrative: result.aiNarrative
+            };
+        }
 
-                const totalCells = fileObj.rowCount * fileObj.colCount;
-                const errorRatio = filteredErrors.length / Math.max(1, totalCells);
-                
-                let riskLevel = "Thấp";
-                if (errorRatio > 0.1) {
-                    riskLevel = "Cao 🔴";
-                } else if (errorRatio > 0.03) {
-                    riskLevel = "Trung bình 🟡";
-                } else {
-                    riskLevel = "Thấp 🟢";
-                }
-
-                resolve({
-                    totalRows: fileObj.rowCount,
-                    totalCols: fileObj.colCount,
-                    totalErrors: filteredErrors.length,
-                    riskLevel,
-                    errors: filteredErrors
-                });
-            }, 1000);
-        });
+        const errors = fileService.findDetailedErrorsLocal(fileObj.headers, fileObj.rows);
+        return {
+            totalRows: fileObj.rowCount,
+            totalCols: fileObj.colCount,
+            totalErrors: errors.length,
+            riskLevel: errors.length > 10 ? "Cao" : errors.length > 3 ? "Trung bình" : "Thấp",
+            errors
+        };
     }
 };
 

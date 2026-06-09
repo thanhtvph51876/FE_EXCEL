@@ -1,6 +1,8 @@
 /* ==========================================================================
-   EXCELAI BOT - FILE UTILITY AND PARSING SERVICE
+   EXCELAI BOT - FILE UTILITY, API UPLOAD, AND PARSING SERVICE
    ========================================================================== */
+
+import { API_BASE, apiFetch } from "./config.js";
 
 export const fileService = {
     maxSizeLimit: 10 * 1024 * 1024, // 10MB
@@ -30,31 +32,50 @@ export const fileService = {
     },
 
     async parseCSV(file) {
+        return this.uploadFile(file);
+    },
+
+    async uploadFile(file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const token = localStorage.getItem("excelai_token");
+        const res = await fetch(`${API_BASE}/api/files/upload`, {
+            method: "POST",
+            headers: token ? { "Authorization": `Bearer ${token}` } : {},
+            body: formData
+        });
+
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || "Upload thất bại");
+        }
+        return res.json();
+    },
+
+    async getFiles() {
+        return apiFetch("/api/files");
+    },
+
+    async deleteFile(fileId) {
+        return apiFetch(`/api/files/${fileId}`, { method: "DELETE" });
+    },
+
+    async getFilePreview(fileId) {
+        return apiFetch(`/api/files/${fileId}/preview`);
+    },
+
+    async updateFileMetadata(fileId, metadata = {}) {
+        return apiFetch(`/api/files/${encodeURIComponent(fileId)}/metadata`, {
+            method: "PATCH",
+            body: JSON.stringify(metadata)
+        });
+    },
+
+    async parseLocalCSV(file) {
         return new Promise((resolve, reject) => {
             const fileName = file.name.toLowerCase();
             if (fileName.endsWith(".xlsx") || fileName.endsWith(".xls")) {
-                // Return mock Excel preview structure immediately
-                setTimeout(() => {
-                    const mockHeaders = ["Mã sản phẩm", "Tên sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"];
-                    const mockRows = [
-                        ["SP001", "Điện thoại iPhone 15 Pro Max", "10", "30,000,000", "300,000,000"],
-                        ["SP002", "Tai nghe không dây AirPods Pro 2", "25", "5,500,000", "137,500,000"],
-                        ["SP003", "Ốp lưng Silicone iPhone 15", "50", "350,000", "17,500,000"],
-                        ["SP004", "Củ sạc nhanh USB-C 20W", "40", "490,000", "19,600,000"],
-                        ["SP005", "Đế sạc không dây MagSafe Duo", "15", "3,200,000", "48,000,000"]
-                    ];
-                    const statistics = this.buildDataStatistics(mockHeaders, mockRows, 120);
-                    resolve({
-                        name: file.name,
-                        size: file.size,
-                        rowCount: 120, // Mock row count
-                        colCount: mockHeaders.length,
-                        headers: mockHeaders,
-                        rows: mockRows,
-                        statistics,
-                        isExcelDemo: true
-                    });
-                }, 800);
+                reject("Excel nhị phân cần được parse qua backend API.");
                 return;
             }
 
@@ -90,8 +111,7 @@ export const fileService = {
                     colCount: headers.length,
                     headers,
                     rows: rows,
-                    statistics,
-                    isExcelDemo: false
+                    statistics
                 });
             };
             reader.onerror = () => {
@@ -202,7 +222,26 @@ export const fileService = {
     },
 
     // RÀ SOÁT LỖI DỮ LIỆU THỰC TẾ
-    findDetailedErrors(headers, rows) {
+    async findDetailedErrors(headers, rows, fileId = null) {
+        if (fileId) {
+            const data = await apiFetch("/api/ai/data-check", {
+                method: "POST",
+                body: JSON.stringify({ fileId })
+            });
+            return (data.errors || []).map(err => ({
+                row: err.row,
+                colName: err.column,
+                value: err.value,
+                errorType: err.issue,
+                suggestion: err.issue,
+                healthScore: data.healthScore,
+                aiNarrative: data.aiNarrative
+            }));
+        }
+        return this.findDetailedErrorsLocal(headers, rows);
+    },
+
+    findDetailedErrorsLocal(headers, rows) {
         const errors = [];
         const lowercaseHeaders = headers.map(h => h.toLowerCase().trim());
         
@@ -362,7 +401,63 @@ export const fileService = {
     },
 
     // ĐỐI SOÁT DỮ LIỆU HAI FILE A VÀ B
-    performReconciliation(fileA, fileB, keyColA, keyColB, valColA, valColB) {
+    async performReconciliation(fileA, fileB, keyColA, keyColB, valColA, valColB) {
+        if (fileA?.id && fileB?.id) {
+            const data = await apiFetch("/api/ai/reconcile", {
+                method: "POST",
+                body: JSON.stringify({
+                    fileAId: fileA.id,
+                    fileBId: fileB.id,
+                    keyA: keyColA,
+                    keyB: keyColB,
+                    valA: valColA,
+                    valB: valColB
+                })
+            });
+            const discrepancies = data.discrepancies || [];
+            const mismatched = discrepancies
+                .filter(item => item.reason === "Chênh lệch giá trị")
+                .map(item => ({
+                    key: item.key,
+                    rowA: item.rowA || "-",
+                    rowB: item.rowB || "-",
+                    valA: item.valA || 0,
+                    valB: item.valB || 0,
+                    difference: item.diff || 0,
+                    desc: `Khóa '${item.key}' có giá trị File A = ${(item.valA || 0).toLocaleString()}đ, File B = ${(item.valB || 0).toLocaleString()}đ.`
+                }));
+            const missingInB = discrepancies
+                .filter(item => item.reason === "Thiếu ở File B")
+                .map(item => ({
+                    key: item.key,
+                    rowA: item.rowA || "-",
+                    valA: item.valA || 0,
+                    desc: `Khóa '${item.key}' xuất hiện trong File A nhưng bị thiếu ở File B.`
+                }));
+            const missingInA = discrepancies
+                .filter(item => item.reason === "Thiếu ở File A")
+                .map(item => ({
+                    key: item.key,
+                    rowB: item.rowB || "-",
+                    valB: item.valB || 0,
+                    desc: `Khóa '${item.key}' xuất hiện trong File B nhưng bị thiếu ở File A.`
+                }));
+
+            return {
+                matchedCount: data.summary?.matched || 0,
+                mismatchedCount: data.summary?.mismatched || 0,
+                missingInBCount: data.summary?.missingB || 0,
+                missingInACount: data.summary?.missingA || 0,
+                missingInB,
+                missingInA,
+                mismatched,
+                aiNarrative: data.aiNarrative || ""
+            };
+        }
+        return this.performLocalReconciliation(fileA, fileB, keyColA, keyColB, valColA, valColB);
+    },
+
+    performLocalReconciliation(fileA, fileB, keyColA, keyColB, valColA, valColB) {
         const headersA = fileA.headers;
         const headersB = fileB.headers;
         const rowsA = fileA.rows;

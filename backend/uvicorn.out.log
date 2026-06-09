@@ -1,0 +1,717 @@
+request_id=f9080914-454e-48ad-8c45-5ab3168e3a82 method=GET path=/api/system/broadcasts/active status=200 latency_ms=884
+INFO:     127.0.0.1:57425 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=545e1a7e-1f29-47cd-bd3e-1e763acf967a method=GET path=/api/admin/metrics status=200 latency_ms=995
+INFO:     127.0.0.1:55331 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=9acf1edd-7a96-4de5-bdb3-5b67d891b043 method=GET path=/api/admin/metrics status=200 latency_ms=723
+request_id=7e7d3198-3e5d-4489-89c7-277870981ea5 method=GET path=/api/system/broadcasts/active status=200 latency_ms=865
+INFO:     127.0.0.1:55331 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65223 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=5482d22f-e089-44ba-a84e-5b0d22e39c1a method=GET path=/api/system/broadcasts/active status=200 latency_ms=761
+request_id=a56aa613-c275-459d-a0ab-c74429d53dc3 method=GET path=/api/admin/metrics status=200 latency_ms=977
+INFO:     127.0.0.1:51459 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55035 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=9b9dd0c9-3c8f-44a8-ad22-1351683a7b56 method=GET path=/api/system/broadcasts/active status=200 latency_ms=203
+INFO:     127.0.0.1:54464 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=2ba3335a-3251-4460-a29e-76d523cf2b70 method=GET path=/api/admin/metrics status=200 latency_ms=524
+INFO:     127.0.0.1:55035 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=afbd494c-01e9-4954-bf0f-bb8b71ea63d6 method=GET path=/api/system/broadcasts/active status=200 latency_ms=712
+INFO:     127.0.0.1:62463 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=a1b4721c-fdd4-4782-b60c-a115a3274518 method=GET path=/api/admin/metrics status=200 latency_ms=819
+INFO:     127.0.0.1:50746 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=c7651430-fb79-4ede-99d9-486c664cbf44 method=GET path=/api/admin/metrics status=200 latency_ms=524
+request_id=3af14acf-d69f-485c-9809-36e3078f95b4 method=GET path=/api/system/broadcasts/active status=200 latency_ms=619
+INFO:     127.0.0.1:50746 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51535 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=fa6ac92a-d908-4264-be67-e90d6dc3669a method=GET path=/api/system/broadcasts/active status=200 latency_ms=581
+INFO:     127.0.0.1:61063 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=2039d3d9-216c-41f7-a2e6-74b869c8acba method=GET path=/api/admin/metrics status=200 latency_ms=696
+INFO:     127.0.0.1:50388 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=0e73bdec-f7d8-4c11-84af-c96424b3be8d method=GET path=/api/system/broadcasts/active status=200 latency_ms=230
+INFO:     127.0.0.1:52818 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=b110d772-db6c-4185-aebb-7223c23b8411 method=GET path=/api/admin/metrics status=200 latency_ms=650
+INFO:     127.0.0.1:50388 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=c466237f-d2c8-4910-a27a-2d025eb00d74 method=GET path=/api/system/broadcasts/active status=200 latency_ms=660
+request_id=a2067549-a5be-4657-a053-3c41cf26e8ac method=GET path=/api/admin/metrics status=200 latency_ms=757
+INFO:     127.0.0.1:55781 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49233 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=944be455-0893-4e30-9ec3-db7c6ffa4bac method=GET path=/api/system/broadcasts/active status=200 latency_ms=633
+request_id=47d194e6-8e32-4744-b4b9-83d7f9f94270 method=GET path=/api/admin/metrics status=200 latency_ms=730
+INFO:     127.0.0.1:55781 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49233 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=afa577bf-1b28-4e0a-8a16-c3d28e84590c method=GET path=/api/health status=200 latency_ms=64
+INFO:     127.0.0.1:53548 - "GET /api/health HTTP/1.1" 200 OK
+request_id=f2a5a5df-4803-4d99-88af-9945cc3e3229 method=GET path=/openapi.json status=200 latency_ms=50
+INFO:     127.0.0.1:53558 - "GET /openapi.json HTTP/1.1" 200 OK
+request_id=4d57a943-9eb8-474b-ad9c-67e18af36226 method=GET path=/api/system/broadcasts/active status=200 latency_ms=423
+INFO:     127.0.0.1:53513 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=a8e9febf-bab5-4bd0-bac3-c4c0331cc84e method=GET path=/api/admin/metrics status=200 latency_ms=3317
+INFO:     127.0.0.1:56545 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59750 - "OPTIONS /api/billing/pricing HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50816 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+request_id=5c0b0214-5e7a-4a53-890a-3450195843f5 method=GET path=/api/system/broadcasts/active status=200 latency_ms=4886
+INFO:     127.0.0.1:53513 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=f02e3054-b485-4f14-a60b-52cd42edae42 method=GET path=/api/admin/metrics status=200 latency_ms=5547
+INFO:     127.0.0.1:49670 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=b183ddad-05ed-4402-8894-71c3c61d868a method=GET path=/api/auth/me status=200 latency_ms=5734
+INFO:     127.0.0.1:56545 - "GET /api/auth/me HTTP/1.1" 200 OK
+request_id=e1332931-86a4-4e92-a3ff-6e2a66634255 method=GET path=/api/billing/pricing status=200 latency_ms=4304
+INFO:     127.0.0.1:63356 - "GET /api/billing/pricing HTTP/1.1" 200 OK
+request_id=6502b945-c329-47f9-8dda-b8a017fb014e method=POST path=/api/auth/login status=200 latency_ms=9534
+INFO:     127.0.0.1:56545 - "OPTIONS /api/settings/feature-flags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49670 - "OPTIONS /api/settings/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59750 - "POST /api/auth/login HTTP/1.1" 200 OK
+request_id=e7a74076-5dd1-4888-8889-209a295623f0 method=GET path=/api/admin/metrics status=200 latency_ms=8071
+INFO:     127.0.0.1:53513 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58717 - "OPTIONS /api/history HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63356 - "OPTIONS /api/history/chat-threads HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59750 - "OPTIONS /api/history/chat-threads HTTP/1.1" 200 OK
+request_id=dbf4212b-f1e7-48e8-a1ce-84bc185ada25 method=GET path=/api/settings/feature-flags status=200 latency_ms=2455
+INFO:     127.0.0.1:56545 - "GET /api/settings/feature-flags HTTP/1.1" 200 OK
+request_id=39a13729-773e-4c7e-bf46-cce016ba3a4c method=GET path=/api/settings/workspace status=200 latency_ms=4871
+request_id=211b0b65-3205-40fd-87ba-de4889ae74ea method=GET path=/api/history status=200 latency_ms=5447
+INFO:     127.0.0.1:49670 - "GET /api/settings/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53513 - "GET /api/history HTTP/1.1" 200 OK
+request_id=ecb60650-7b9a-419e-9245-ce5a6732f8be method=GET path=/api/history/chat-threads status=200 latency_ms=6046
+INFO:     127.0.0.1:58717 - "GET /api/history/chat-threads HTTP/1.1" 200 OK
+request_id=d65f2c0d-a873-41a7-b21b-48237692e0de method=GET path=/api/settings/feature-flags status=200 latency_ms=3185
+INFO:     127.0.0.1:58717 - "OPTIONS /api/files HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59750 - "GET /api/settings/feature-flags HTTP/1.1" 200 OK
+request_id=02781654-5e9d-4928-ab0e-bf747c025609 method=GET path=/api/settings/workspace status=200 latency_ms=4935
+request_id=456127c9-934d-4aae-9352-c254bef6a308 method=GET path=/api/history status=200 latency_ms=5484
+INFO:     127.0.0.1:56545 - "GET /api/settings/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49670 - "GET /api/history HTTP/1.1" 200 OK
+request_id=cd8045bb-ba4c-47a4-a569-9c9cd695d48b method=GET path=/api/history/chat-threads status=200 latency_ms=6203
+INFO:     127.0.0.1:53513 - "GET /api/history/chat-threads HTTP/1.1" 200 OK
+request_id=32c58960-00f6-4de3-a031-0a0fe1dc9c21 method=GET path=/api/files status=200 latency_ms=4369
+request_id=3d8a7187-60ee-4347-944e-5b75267d85cf method=GET path=/api/admin/metrics status=200 latency_ms=4932
+INFO:     127.0.0.1:58717 - "GET /api/files HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64316 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=9b89fee2-5c3c-4d94-963b-1a97520fe172 method=GET path=/api/files status=200 latency_ms=940
+INFO:     127.0.0.1:64316 - "GET /api/files HTTP/1.1" 200 OK
+request_id=34841f6b-f144-401d-9f89-c780cc7a7f9b method=GET path=/api/system/broadcasts/active status=200 latency_ms=712
+INFO:     127.0.0.1:64316 - "OPTIONS /api/admin/users?page=1&pageSize=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58717 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64958 - "OPTIONS /api/admin/prompt-config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62247 - "OPTIONS /api/admin/logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55643 - "OPTIONS /api/admin/api-keys HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58717 - "OPTIONS /api/admin/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49294 - "OPTIONS /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64958 - "OPTIONS /api/admin/feedbacks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62247 - "OPTIONS /api/admin/security-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55643 - "OPTIONS /api/admin/pricing-config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58717 - "OPTIONS /api/admin/feature-flags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49294 - "OPTIONS /api/admin/templates HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64958 - "OPTIONS /api/admin/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62247 - "OPTIONS /api/admin/broadcasts HTTP/1.1" 200 OK
+request_id=b596b888-79e5-4756-976e-ef8e9de5e9cd method=GET path=/api/admin/metrics status=200 latency_ms=2441
+INFO:     127.0.0.1:64316 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=470bd4bb-c1d7-4331-b5e0-e7550f9d160e method=GET path=/api/admin/users status=200 latency_ms=4212
+request_id=74537e3d-d7cb-47e9-8ab2-af42c23e68ae method=GET path=/api/system/broadcasts/active status=200 latency_ms=5677
+INFO:     127.0.0.1:55643 - "GET /api/admin/users?page=1&pageSize=20 HTTP/1.1" 200 OK
+request_id=f7051f82-8a6c-4e8d-aa1d-b0a0802ccd4f method=GET path=/api/admin/prompt-config status=200 latency_ms=5541
+INFO:     127.0.0.1:58717 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=9861776a-7a22-4286-90a6-90e96f4f98d7 method=GET path=/api/admin/logs status=200 latency_ms=6152
+INFO:     127.0.0.1:49294 - "GET /api/admin/prompt-config HTTP/1.1" 200 OK
+request_id=998e6b4b-443a-4932-a769-510beba664d8 method=GET path=/api/admin/api-keys status=200 latency_ms=6710
+INFO:     127.0.0.1:64958 - "GET /api/admin/logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62247 - "GET /api/admin/api-keys HTTP/1.1" 200 OK
+request_id=4c1fe55c-6da8-497a-9808-ced60630b1f9 method=GET path=/api/admin/jobs status=200 latency_ms=6710
+INFO:     127.0.0.1:64316 - "GET /api/admin/jobs HTTP/1.1" 200 OK
+request_id=a07b8419-6359-4ad0-95e7-da50fb1c8b0c method=GET path=/api/admin/security-settings status=200 latency_ms=3623
+request_id=73df650e-e143-4bcd-a45a-d0f900d291d1 method=GET path=/api/admin/coupons status=200 latency_ms=5141
+request_id=0eef4b33-1b52-4bc7-bde1-aa83d60ef5de method=GET path=/api/admin/feedbacks status=200 latency_ms=5905
+request_id=1925e6c0-0de2-4194-a8bc-1b3524e48c66 method=GET path=/api/admin/pricing-config status=200 latency_ms=6810
+INFO:     127.0.0.1:49294 - "GET /api/admin/security-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55643 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58717 - "GET /api/admin/feedbacks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64958 - "GET /api/admin/pricing-config HTTP/1.1" 200 OK
+request_id=e37c62ac-9d93-4c2b-905d-9c7239b347f5 method=GET path=/api/admin/feature-flags status=200 latency_ms=7435
+INFO:     127.0.0.1:62247 - "GET /api/admin/feature-flags HTTP/1.1" 200 OK
+request_id=46733d1a-d3f3-4368-9634-b60b7c6289d2 method=GET path=/api/admin/templates status=200 latency_ms=8919
+INFO:     127.0.0.1:64316 - "GET /api/admin/templates HTTP/1.1" 200 OK
+request_id=d91f69d9-28ce-4a8f-81ea-4f2c4c785385 method=GET path=/api/admin/broadcasts status=200 latency_ms=7235
+request_id=95967065-9be5-4918-815a-29112c100f3d method=GET path=/api/admin/metrics status=200 latency_ms=7869
+INFO:     127.0.0.1:55643 - "GET /api/admin/broadcasts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64958 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=e7d49762-588e-4c74-962b-8a6b98cd5e4a method=GET path=/api/admin/workspaces status=200 latency_ms=8587
+request_id=05a20377-f6e1-44db-9753-393229621cd5 method=GET path=/api/system/broadcasts/active status=200 latency_ms=9329
+INFO:     127.0.0.1:49294 - "GET /api/admin/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58717 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=94bd858b-c737-448d-9fa4-47930a337f02 method=GET path=/api/system/broadcasts/active status=200 latency_ms=3545
+request_id=fd01288f-fa57-4c06-9df7-c364e89fe49e method=GET path=/api/admin/metrics status=200 latency_ms=4143
+INFO:     127.0.0.1:55643 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64958 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=64d1caac-dd93-4a89-93cb-18bd43fde856 method=GET path=/api/system/broadcasts/active status=200 latency_ms=582
+INFO:     127.0.0.1:55643 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=50f06fff-2342-4abe-b55a-3e92fcd051e5 method=GET path=/api/system/broadcasts/active status=200 latency_ms=793
+INFO:     127.0.0.1:63802 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=887ea61b-7beb-4b6c-a69e-a01f8d42e56d method=GET path=/api/admin/metrics status=200 latency_ms=2695
+INFO:     127.0.0.1:63802 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=66b2270c-6761-4519-9b10-ade144694f02 method=GET path=/api/system/broadcasts/active status=200 latency_ms=551
+INFO:     127.0.0.1:58030 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=9092a230-0dc6-49ac-852d-4d984f0a0809 method=GET path=/api/system/broadcasts/active status=200 latency_ms=815
+INFO:     127.0.0.1:61822 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=c8677a39-89bc-4347-b1d1-36f9ff9387f9 method=GET path=/api/system/broadcasts/active status=200 latency_ms=3380
+INFO:     127.0.0.1:61822 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=3c66818a-103d-4eee-afe7-af93f419e6f0 method=GET path=/api/admin/metrics status=200 latency_ms=4169
+INFO:     127.0.0.1:61628 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54060 - "OPTIONS /api/admin/metrics HTTP/1.1" 200 OK
+request_id=1e14ec5a-866e-4c4b-860e-4af6520fa2c1 method=GET path=/api/admin/metrics status=200 latency_ms=2694
+INFO:     127.0.0.1:54060 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54060 - "OPTIONS /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=8ba317fe-9ba0-46cb-801b-73a1f8aaee24 method=GET path=/api/system/broadcasts/active status=200 latency_ms=547
+INFO:     127.0.0.1:54060 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=f515bed7-f7e6-4a70-a804-40b92099c759 method=GET path=/api/system/broadcasts/active status=200 latency_ms=613
+INFO:     127.0.0.1:63657 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=22c7f141-c28a-4132-bddd-b449f15b20ca method=GET path=/api/admin/metrics status=200 latency_ms=2754
+INFO:     127.0.0.1:63657 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=d15a569c-425b-44a9-9b39-8064a8b36913 method=GET path=/api/system/broadcasts/active status=200 latency_ms=908
+INFO:     127.0.0.1:65406 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=69a29d46-0fcd-4ee7-81b6-a31106d7f385 method=GET path=/api/system/broadcasts/active status=200 latency_ms=714
+INFO:     127.0.0.1:51474 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=dc94bffd-98c5-457a-9abd-4444845686c3 method=GET path=/api/system/broadcasts/active status=200 latency_ms=688
+INFO:     127.0.0.1:51474 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=f0aedca1-95b6-4955-9b36-54c8dbfa2efd method=GET path=/api/admin/metrics status=200 latency_ms=2669
+INFO:     127.0.0.1:65363 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=d0890956-93f3-4427-96a8-8c2f6f826061 method=GET path=/api/admin/metrics status=200 latency_ms=2647
+INFO:     127.0.0.1:65363 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=b54609b5-0da8-48d5-a1be-d5366684196b method=GET path=/api/system/broadcasts/active status=200 latency_ms=676
+INFO:     127.0.0.1:65363 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=8ea30e0d-1ef8-47a9-ae62-03e4608b8c0a method=GET path=/api/system/broadcasts/active status=200 latency_ms=774
+INFO:     127.0.0.1:60763 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=5533bdb8-001b-486e-a617-ed238c1cff33 method=GET path=/api/admin/metrics status=200 latency_ms=3252
+INFO:     127.0.0.1:60763 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=317ca852-b1b3-4cd6-bc43-6c642a198f13 method=GET path=/api/system/broadcasts/active status=200 latency_ms=733
+INFO:     127.0.0.1:56516 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=a3c0e5c5-fb40-4e84-aaeb-ae9283db9387 method=GET path=/api/system/broadcasts/active status=200 latency_ms=668
+INFO:     127.0.0.1:65364 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=2c155aab-34a8-4f45-8bb0-a57f6cf8a79c method=GET path=/api/system/broadcasts/active status=200 latency_ms=645
+INFO:     127.0.0.1:65364 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=090f27fc-1f55-46ea-94c3-6408c72a28dc method=GET path=/api/admin/metrics status=200 latency_ms=2813
+INFO:     127.0.0.1:51097 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=02fee1bc-6bd1-462b-8a98-c833a24e8dd8 method=GET path=/api/admin/metrics status=200 latency_ms=3050
+INFO:     127.0.0.1:51097 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=88a66b41-3de0-46ed-91bc-e4afdeff8b78 method=GET path=/api/system/broadcasts/active status=200 latency_ms=573
+INFO:     127.0.0.1:51097 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=9080e4e2-83aa-4526-8915-10afc1642220 method=GET path=/api/system/broadcasts/active status=200 latency_ms=636
+INFO:     127.0.0.1:51727 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=b061a509-08b7-41f1-908b-cb7e96fccf96 method=GET path=/api/admin/metrics status=200 latency_ms=2988
+INFO:     127.0.0.1:51727 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=9193a462-b69c-4d50-ab64-ad222ec94a05 method=GET path=/api/system/broadcasts/active status=200 latency_ms=812
+INFO:     127.0.0.1:64351 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=4a8fa6f5-b0ae-4586-9740-f66d56f74845 method=GET path=/api/system/broadcasts/active status=200 latency_ms=645
+INFO:     127.0.0.1:50528 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=617eaea5-c0af-4297-b0b3-f010a23c4e5d method=GET path=/api/system/broadcasts/active status=200 latency_ms=754
+INFO:     127.0.0.1:50528 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=1ed0ef95-c03c-4a58-a86a-c82dcad105e7 method=GET path=/api/admin/metrics status=200 latency_ms=4339
+INFO:     127.0.0.1:65478 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=9ddf3bb7-1e26-4f44-b22f-bf8f42025db4 method=GET path=/api/admin/metrics status=200 latency_ms=3431
+INFO:     127.0.0.1:65478 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=3e2899d2-98a5-4d6f-9eec-e8ba9550829a method=GET path=/api/system/broadcasts/active status=200 latency_ms=626
+INFO:     127.0.0.1:65478 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=46ccd249-9f02-46bb-9673-91cc1316b884 method=GET path=/api/system/broadcasts/active status=200 latency_ms=745
+INFO:     127.0.0.1:50539 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=fd246b3d-16c3-48c0-848e-4a744b187545 method=GET path=/api/admin/metrics status=200 latency_ms=3831
+INFO:     127.0.0.1:50539 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=d5a84ed8-59a6-4477-9a54-ab90661a8c8a method=GET path=/api/system/broadcasts/active status=200 latency_ms=696
+INFO:     127.0.0.1:50539 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=cf1f7846-3f90-4ae2-b90b-2cccf38f6079 method=GET path=/api/system/broadcasts/active status=200 latency_ms=505
+INFO:     127.0.0.1:59240 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=31ae4fbc-e626-4db6-be5e-aa52964dd16a method=GET path=/api/system/broadcasts/active status=200 latency_ms=544
+INFO:     127.0.0.1:59240 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=faa1d6b1-2682-43f7-bf47-48997b99c31c method=GET path=/api/admin/metrics status=200 latency_ms=2275
+INFO:     127.0.0.1:54807 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=d8c2c03c-3f53-4cb2-8db6-5f2346c96cf5 method=GET path=/api/admin/metrics status=200 latency_ms=3135
+INFO:     127.0.0.1:54807 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=ba32e751-fda7-4379-a5a5-a16f3dee6b3e method=GET path=/api/system/broadcasts/active status=200 latency_ms=407
+INFO:     127.0.0.1:54807 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=3b8fddcc-f07b-4e81-8a61-3dbeedba644f method=GET path=/api/system/broadcasts/active status=200 latency_ms=473
+INFO:     127.0.0.1:51752 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=86dee6d4-ea40-4568-97ea-c6c40e23e67c method=GET path=/api/admin/metrics status=200 latency_ms=2235
+INFO:     127.0.0.1:51752 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=9c8c41fa-accb-494f-8ec8-4788f807f400 method=GET path=/api/system/broadcasts/active status=200 latency_ms=508
+INFO:     127.0.0.1:57810 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=b53cca4e-2818-44c7-be36-68015638ae46 method=GET path=/api/system/broadcasts/active status=200 latency_ms=610
+INFO:     127.0.0.1:53174 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=ac4c2008-37d9-46c3-8884-4649f0d86177 method=GET path=/api/system/broadcasts/active status=200 latency_ms=2848
+INFO:     127.0.0.1:53174 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=817846b4-2572-4b7d-8ca7-c7cdb7f3af11 method=GET path=/api/admin/metrics status=200 latency_ms=3318
+INFO:     127.0.0.1:56413 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=26686f5b-7ce1-4a06-acc4-5514d5a14eaa method=GET path=/api/admin/metrics status=200 latency_ms=2177
+INFO:     127.0.0.1:56413 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=add7255e-0d6e-4c07-b3b8-3018f00b0f1b method=GET path=/api/system/broadcasts/active status=200 latency_ms=487
+INFO:     127.0.0.1:56413 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=6a8660f2-f92e-49f9-8c85-ea9fbdc2b2cf method=GET path=/api/system/broadcasts/active status=200 latency_ms=482
+INFO:     127.0.0.1:52900 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=12fd9886-b9eb-4bc7-846d-40f36ae0834e method=GET path=/api/admin/metrics status=200 latency_ms=2206
+INFO:     127.0.0.1:52900 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=d19a6ec6-ded0-4895-ab0c-2f093c027e23 method=GET path=/api/system/broadcasts/active status=200 latency_ms=564
+INFO:     127.0.0.1:62084 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=c662c2db-2862-4f1e-90a7-6eeaa914c5aa method=GET path=/api/system/broadcasts/active status=200 latency_ms=473
+INFO:     127.0.0.1:51695 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=677cb72f-816a-4320-a2e8-351b4bc30449 method=GET path=/api/system/broadcasts/active status=200 latency_ms=2723
+INFO:     127.0.0.1:51695 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=4d0a1b6b-433a-4f1b-820e-afdb414c2354 method=GET path=/api/admin/metrics status=200 latency_ms=3294
+INFO:     127.0.0.1:56234 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=b86df2e2-a4f1-42b1-a89f-8ec3b448e541 method=GET path=/api/admin/metrics status=200 latency_ms=2191
+INFO:     127.0.0.1:56234 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=d3a4bfbd-a640-441f-ac63-3a7e2121d0c4 method=GET path=/api/system/broadcasts/active status=200 latency_ms=443
+INFO:     127.0.0.1:56234 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=c01585e4-5cee-4c99-be2e-bf20d844c6f3 method=GET path=/api/system/broadcasts/active status=200 latency_ms=529
+INFO:     127.0.0.1:56059 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=f0e491a2-f1f0-499e-8815-977782f642a5 method=GET path=/api/admin/metrics status=200 latency_ms=2338
+INFO:     127.0.0.1:56059 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=0e420544-ede6-4ae4-8c19-955ba6ceb221 method=GET path=/api/system/broadcasts/active status=200 latency_ms=434
+INFO:     127.0.0.1:59192 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=fe9ae39e-08bb-4a9a-8b3e-e4b9b0489e33 method=GET path=/api/system/broadcasts/active status=200 latency_ms=483
+INFO:     127.0.0.1:59730 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=d6100ccb-ae73-4a21-91b6-8eab7eb28396 method=GET path=/api/system/broadcasts/active status=200 latency_ms=2598
+INFO:     127.0.0.1:59730 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=89e4efc4-5763-4401-947b-7eb7b18c3ff2 method=GET path=/api/admin/metrics status=200 latency_ms=3071
+INFO:     127.0.0.1:52669 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=38db83aa-22f6-410b-b103-144e963d7273 method=GET path=/api/admin/metrics status=200 latency_ms=2283
+INFO:     127.0.0.1:52669 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=eb185e9a-9af2-4a4a-b265-4cd0a034e8c6 method=GET path=/api/system/broadcasts/active status=200 latency_ms=432
+INFO:     127.0.0.1:52669 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=222146dd-f50d-440e-8065-122de73abdd1 method=GET path=/api/system/broadcasts/active status=200 latency_ms=636
+INFO:     127.0.0.1:49323 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=e211a2b0-98b7-4ce7-87a3-5843289eadc0 method=GET path=/api/admin/metrics status=200 latency_ms=2253
+INFO:     127.0.0.1:49323 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=c760e28d-599a-4c28-a3e8-fea929adef33 method=GET path=/api/system/broadcasts/active status=200 latency_ms=2207
+INFO:     127.0.0.1:51967 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=438c317e-a89e-4d31-b86d-0e3c4a140c0f method=GET path=/api/system/broadcasts/active status=200 latency_ms=3110
+INFO:     127.0.0.1:57840 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=eaee1c3b-d3c5-448b-a660-05898838a44e method=GET path=/api/admin/metrics status=200 latency_ms=11860
+INFO:     127.0.0.1:49179 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=606ce148-a66e-4037-86af-f188241b7c6a method=GET path=/api/system/broadcasts/active status=200 latency_ms=1503
+INFO:     127.0.0.1:57840 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=782e95ff-4e8f-4283-9098-c3ef7d87a7e9 method=GET path=/api/admin/metrics status=200 latency_ms=17026
+INFO:     127.0.0.1:49179 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=3cad22e9-4870-466f-ba21-6199a98048ca method=GET path=/api/system/broadcasts/active status=200 latency_ms=3160
+INFO:     127.0.0.1:57840 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=369f9074-164b-41c8-a3b9-3effeb068c38 method=GET path=/api/admin/metrics status=200 latency_ms=8474
+INFO:     127.0.0.1:49179 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=1a4ffb1d-0bb3-400f-9ba0-ee6ba54e3d0c method=GET path=/api/system/broadcasts/active status=200 latency_ms=9646
+INFO:     127.0.0.1:58800 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=122be81b-6110-446e-a25d-e8dab9e10045 method=GET path=/api/system/broadcasts/active status=200 latency_ms=3652
+INFO:     127.0.0.1:57840 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=d9407cbb-7019-4438-b2b2-c504e935a2a3 method=GET path=/api/admin/metrics status=200 latency_ms=8166
+INFO:     127.0.0.1:62712 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=da70f9aa-05ee-4e1c-a049-b051843cd0a2 method=GET path=/api/system/broadcasts/active status=200 latency_ms=1416
+INFO:     127.0.0.1:57840 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=bfbf5725-9b45-4f47-b81b-6334530756ff method=GET path=/api/system/broadcasts/active status=200 latency_ms=1186
+INFO:     127.0.0.1:57840 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=0fb21c9a-bf9b-42d8-99c2-551cac6d6ad0 method=GET path=/api/system/broadcasts/active status=200 latency_ms=1264
+INFO:     127.0.0.1:57840 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=c4de72d5-d507-4ebf-ba18-2c0295e2670b method=GET path=/api/admin/metrics status=200 latency_ms=5004
+INFO:     127.0.0.1:57840 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=89b67c7e-a890-4232-a4e2-5704a4f82836 method=GET path=/api/system/broadcasts/active status=200 latency_ms=1124
+INFO:     127.0.0.1:57840 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=664c68c9-ec65-4107-a1d4-65ae58d0ea5d method=GET path=/api/system/broadcasts/active status=200 latency_ms=3513
+INFO:     127.0.0.1:61771 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=c4e6bae2-0d72-47f8-b693-0e0ad4705f9d method=GET path=/api/admin/metrics status=200 latency_ms=6730
+INFO:     127.0.0.1:61771 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61771 - "OPTIONS /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=7e97a074-44e6-40a6-9497-356524dd6b44 method=GET path=/api/system/broadcasts/active status=200 latency_ms=2690
+INFO:     127.0.0.1:61771 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=73d41bbf-0af7-4958-b859-e369c4d6eec1 method=GET path=/api/system/broadcasts/active status=200 latency_ms=9635
+INFO:     127.0.0.1:56345 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55580 - "OPTIONS /api/admin/metrics HTTP/1.1" 200 OK
+request_id=348d09bd-ec98-4ebb-9db7-137d67b8a541 method=GET path=/api/admin/metrics status=200 latency_ms=28781
+INFO:     127.0.0.1:55580 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=3e8cd88e-34e0-4d61-b6ca-333f23169245 method=GET path=/api/system/broadcasts/active status=200 latency_ms=1429
+INFO:     127.0.0.1:56345 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=e349d386-ea70-41f2-a76b-e691a398d38e method=GET path=/api/admin/metrics status=200 latency_ms=8457
+INFO:     127.0.0.1:55580 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=d964fa9a-8e55-43a6-90c7-abba7e15a01f method=GET path=/api/system/broadcasts/active status=200 latency_ms=3505
+INFO:     127.0.0.1:62656 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=b5218ddd-d52e-4f72-8238-c0ebc1d96ea1 method=GET path=/api/admin/metrics status=200 latency_ms=10937
+INFO:     127.0.0.1:55580 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=02fdbbae-72e7-4b1e-afbb-a0d9cde6da8f method=GET path=/api/system/broadcasts/active status=200 latency_ms=15462
+INFO:     127.0.0.1:62656 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=9a4f2005-2446-4dcb-aba5-d0e01a64ef8a method=GET path=/api/system/broadcasts/active status=200 latency_ms=5952
+INFO:     127.0.0.1:51755 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=aa6b7ef2-e991-4a67-a0d8-dc0916f518fd method=GET path=/api/admin/metrics status=200 latency_ms=11162
+INFO:     127.0.0.1:55580 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=4270612b-e250-4bd9-91ae-5d217e80ff20 method=GET path=/api/system/broadcasts/active status=200 latency_ms=12107
+INFO:     127.0.0.1:59375 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=f0b89ec5-d311-44ee-b01e-0ac514a0ea37 method=GET path=/api/system/broadcasts/active status=200 latency_ms=2708
+INFO:     127.0.0.1:59375 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=892f6ae4-dfb9-4804-a5aa-f9e98414757f method=GET path=/api/admin/metrics status=200 latency_ms=33046
+INFO:     127.0.0.1:59375 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=c5a64087-dc5b-49a3-b292-4b3b1dba6d2c method=GET path=/api/system/broadcasts/active status=200 latency_ms=12367
+INFO:     127.0.0.1:55383 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=08a8250e-7146-4131-84e4-e91972bdcd1d method=GET path=/api/system/broadcasts/active status=200 latency_ms=31174
+INFO:     127.0.0.1:62662 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=d53d674e-997b-4df5-9a78-1078d70af0b4 method=GET path=/api/admin/metrics status=200 latency_ms=33748
+INFO:     127.0.0.1:59375 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=ce85055e-9489-4e70-b387-28f807861455 method=GET path=/api/system/broadcasts/active status=200 latency_ms=6348
+INFO:     127.0.0.1:60709 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=976fcab5-074c-4360-9717-d4df7ad20032 method=GET path=/api/system/broadcasts/active status=200 latency_ms=16795
+request_id=8b46eef7-59e7-49ac-a74c-a0dfff090f48 method=GET path=/api/system/broadcasts/active status=200 latency_ms=17325
+request_id=ab39a447-1801-44ec-9fec-096936f93f9d method=GET path=/api/admin/metrics status=200 latency_ms=17879
+INFO:     127.0.0.1:60482 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=ef349956-cccf-440f-86fa-8c1eeb19d917 method=GET path=/api/system/broadcasts/active status=200 latency_ms=426
+request_id=5718f4bd-523e-4967-8d16-18824878d645 method=GET path=/api/health status=200 latency_ms=94
+INFO:     127.0.0.1:59027 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57650 - "OPTIONS /api/auth/me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50549 - "OPTIONS /api/admin/metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52825 - "OPTIONS /api/billing/pricing HTTP/1.1" 200 OK
+request_id=ae539910-c197-4a91-af3b-2fba0a53b21a method=GET path=/api/auth/me status=200 latency_ms=1119
+INFO:     127.0.0.1:57650 - "GET /api/auth/me HTTP/1.1" 200 OK
+request_id=1ddadfa2-bc2f-4347-8ce7-96235b9e7263 method=GET path=/api/admin/metrics status=200 latency_ms=1388
+request_id=8a047a55-ac47-4b0e-8f90-4e3506e7837c method=GET path=/api/billing/pricing status=200 latency_ms=1705
+INFO:     127.0.0.1:50549 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52825 - "GET /api/billing/pricing HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50549 - "OPTIONS /api/settings/feature-flags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52825 - "OPTIONS /api/settings/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57650 - "OPTIONS /api/history HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58319 - "OPTIONS /api/history/chat-threads HTTP/1.1" 200 OK
+request_id=03af8743-3c35-433f-8983-faa5cde11085 method=GET path=/api/settings/feature-flags status=200 latency_ms=1660
+request_id=9fd06042-e937-4533-a764-ff698a6e66e1 method=GET path=/api/settings/workspace status=200 latency_ms=2044
+request_id=1b75e8a1-0e0a-4df4-8439-3fcb4e114580 method=GET path=/api/history status=200 latency_ms=2555
+INFO:     127.0.0.1:52825 - "OPTIONS /api/auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50549 - "GET /api/settings/feature-flags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53531 - "GET /api/settings/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58319 - "GET /api/history HTTP/1.1" 200 OK
+request_id=638107d5-ed26-47b5-a81c-9039f975dc83 method=GET path=/api/history/chat-threads status=200 latency_ms=3184
+INFO:     127.0.0.1:57650 - "GET /api/history/chat-threads HTTP/1.1" 200 OK
+request_id=e8a512d9-fa38-4edd-ad4c-2aee0bebde1b method=POST path=/api/auth/login status=200 latency_ms=3401
+INFO:     127.0.0.1:57650 - "OPTIONS /api/files HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60205 - "POST /api/auth/login HTTP/1.1" 200 OK
+request_id=7692da23-583c-4de6-9677-69a303857d1d method=GET path=/api/files status=200 latency_ms=1413
+INFO:     127.0.0.1:58319 - "GET /api/files HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58319 - "OPTIONS /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=33065613-6dd2-4eea-895d-e0928761c38f method=GET path=/api/settings/feature-flags status=200 latency_ms=3504
+request_id=237058c9-0057-4bb9-b444-828bbe897667 method=GET path=/api/settings/workspace status=200 latency_ms=3954
+request_id=0da225d7-3ed4-4e64-8c28-f16f4581cfc9 method=GET path=/api/history status=200 latency_ms=4466
+INFO:     127.0.0.1:60205 - "GET /api/settings/feature-flags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57650 - "GET /api/settings/workspace HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53531 - "GET /api/history HTTP/1.1" 200 OK
+request_id=5ce7a311-2857-45c4-a856-f8307754cf14 method=GET path=/api/history/chat-threads status=200 latency_ms=5005
+INFO:     127.0.0.1:50549 - "GET /api/history/chat-threads HTTP/1.1" 200 OK
+request_id=d8991f95-b34c-4994-9e84-fc76cc11ad04 method=GET path=/api/system/broadcasts/active status=200 latency_ms=451
+INFO:     127.0.0.1:54876 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=98ee5004-d8bc-43fd-a4fc-78d404af6e49 method=GET path=/api/files status=200 latency_ms=826
+INFO:     127.0.0.1:50549 - "GET /api/files HTTP/1.1" 200 OK
+request_id=b6b60fd2-ac09-4efb-a078-7c2d72e3aa4b method=GET path=/api/system/broadcasts/active status=200 latency_ms=384
+INFO:     127.0.0.1:54876 - "OPTIONS /api/admin/users?page=1&pageSize=20 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53531 - "OPTIONS /api/admin/prompt-config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57650 - "OPTIONS /api/admin/logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58319 - "OPTIONS /api/admin/api-keys HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50549 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54876 - "OPTIONS /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53531 - "OPTIONS /api/admin/jobs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57650 - "OPTIONS /api/admin/feedbacks HTTP/1.1" 200 OK
+request_id=44b243e5-9913-4d34-be6d-4e9d8c6e41d5 method=GET path=/api/admin/metrics status=200 latency_ms=1136
+INFO:     127.0.0.1:58319 - "OPTIONS /api/admin/security-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50549 - "OPTIONS /api/admin/pricing-config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54876 - "OPTIONS /api/admin/feature-flags HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60205 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53531 - "OPTIONS /api/admin/templates HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57650 - "OPTIONS /api/admin/workspaces HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58319 - "OPTIONS /api/admin/broadcasts HTTP/1.1" 200 OK
+request_id=20497829-8737-4ba2-bf27-812bc103f544 method=GET path=/api/admin/users status=200 latency_ms=1046
+INFO:     127.0.0.1:50549 - "GET /api/admin/users?page=1&pageSize=20 HTTP/1.1" 200 OK
+request_id=31a7fe72-fbbf-4135-a3ae-f44bfbdb5c71 method=GET path=/api/admin/prompt-config status=200 latency_ms=1585
+request_id=40912442-b879-4502-b74c-73d848214776 method=GET path=/api/admin/logs status=200 latency_ms=1845
+INFO:     127.0.0.1:54876 - "GET /api/admin/prompt-config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60205 - "GET /api/admin/logs HTTP/1.1" 200 OK
+request_id=1c433bec-ad52-4f6c-ab7f-4a24c2c617f2 method=GET path=/api/admin/api-keys status=200 latency_ms=2739
+INFO:     127.0.0.1:53531 - "GET /api/admin/api-keys HTTP/1.1" 200 OK
+request_id=64c92080-6914-4517-86dc-1ad512d7c5a1 method=GET path=/api/admin/coupons status=200 latency_ms=2967
+request_id=2be45226-4346-44ae-867e-346d9c200857 method=GET path=/api/admin/jobs status=200 latency_ms=3197
+INFO:     127.0.0.1:57650 - "GET /api/admin/coupons HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58319 - "GET /api/admin/jobs HTTP/1.1" 200 OK
+request_id=e7d173e3-f361-43c9-886a-53e0b8732506 method=GET path=/api/admin/security-settings status=200 latency_ms=1717
+request_id=9c0b22c1-108c-4d65-83c5-d8480bef5373 method=GET path=/api/admin/pricing-config status=200 latency_ms=1928
+request_id=83e0e07b-56f5-4396-bf65-9583c12a2ec7 method=GET path=/api/admin/feedbacks status=200 latency_ms=2139
+INFO:     127.0.0.1:54876 - "GET /api/admin/security-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60205 - "GET /api/admin/pricing-config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50549 - "GET /api/admin/feedbacks HTTP/1.1" 200 OK
+request_id=c4987ee3-b50e-4940-b2f2-82d50a35f746 method=GET path=/api/admin/templates status=200 latency_ms=2975
+request_id=21016e32-33a1-46bf-a5bf-22b340242162 method=GET path=/api/admin/feature-flags status=200 latency_ms=3295
+INFO:     127.0.0.1:57650 - "GET /api/admin/templates HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53531 - "GET /api/admin/feature-flags HTTP/1.1" 200 OK
+request_id=36f5d1c1-1960-4748-a801-3cff65ed07b1 method=GET path=/api/admin/workspaces status=200 latency_ms=3505
+INFO:     127.0.0.1:58319 - "GET /api/admin/workspaces HTTP/1.1" 200 OK
+request_id=c45c540a-cc0e-4b62-b557-96bed9fbbe36 method=GET path=/api/system/broadcasts/active status=200 latency_ms=1568
+request_id=82cdb28c-75a4-4381-af10-dd096241e12c method=GET path=/api/admin/metrics status=200 latency_ms=1845
+request_id=b50090b9-605d-463e-af02-6cf2a0399f23 method=GET path=/api/admin/broadcasts status=200 latency_ms=2153
+INFO:     127.0.0.1:60205 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50549 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54876 - "GET /api/admin/broadcasts HTTP/1.1" 200 OK
+request_id=3a3ec5b3-c631-465e-ab39-275ab4a6731e method=GET path=/api/system/broadcasts/active status=200 latency_ms=148
+INFO:     127.0.0.1:60739 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=8f5f6dbd-f8cb-46e6-ba51-9f907b17763b method=GET path=/api/system/broadcasts/active status=200 latency_ms=121
+INFO:     127.0.0.1:60497 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=65b6b07c-c7ba-440a-9286-7a9c247d1c60 method=GET path=/api/admin/metrics status=200 latency_ms=705
+INFO:     127.0.0.1:60497 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=65cee7ab-f4bd-405c-8d02-af7362548bcc method=GET path=/api/system/broadcasts/active status=200 latency_ms=174
+INFO:     127.0.0.1:49671 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=75b364e9-cd4b-406e-9408-b846b34eeece method=GET path=/api/system/broadcasts/active status=200 latency_ms=150
+INFO:     127.0.0.1:50770 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=b534fc31-b1fd-4db4-bf46-cc999608418d method=GET path=/api/admin/metrics status=200 latency_ms=635
+INFO:     127.0.0.1:50770 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=09cfb4c8-4750-4f0a-9bd9-ef1c0b88f321 method=GET path=/api/system/broadcasts/active status=200 latency_ms=162
+INFO:     127.0.0.1:51579 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=88c374ec-73ee-42fd-ad42-048ac110291b method=GET path=/api/system/broadcasts/active status=200 latency_ms=137
+INFO:     127.0.0.1:64057 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=087c1fae-afd2-433c-8cd0-32ddeb342f07 method=GET path=/api/admin/metrics status=200 latency_ms=852
+INFO:     127.0.0.1:64057 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=d5201413-c179-45d5-acfc-dd3f990409cc method=GET path=/api/system/broadcasts/active status=200 latency_ms=188
+INFO:     127.0.0.1:60323 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=108d494f-f362-47fc-9c30-bf670fc9b310 method=GET path=/api/system/broadcasts/active status=200 latency_ms=173
+INFO:     127.0.0.1:55355 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=1ed8ebb7-737a-476a-9d2b-ff79f4fdf385 method=GET path=/api/admin/metrics status=200 latency_ms=683
+INFO:     127.0.0.1:55355 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=5d4594dd-19d0-442e-b55a-d4486f29addb method=GET path=/api/system/broadcasts/active status=200 latency_ms=151
+INFO:     127.0.0.1:53208 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=2ba29e36-5a63-4eaa-8641-8be8086a17c2 method=GET path=/api/system/broadcasts/active status=200 latency_ms=154
+INFO:     127.0.0.1:52500 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=52de1f12-4537-433f-8389-25df6f402816 method=GET path=/api/admin/metrics status=200 latency_ms=550
+INFO:     127.0.0.1:52500 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=29c0e0b5-5aea-4ffb-be98-f14929d442cb method=GET path=/api/system/broadcasts/active status=200 latency_ms=131
+INFO:     127.0.0.1:58351 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=68ca9c77-2bfd-4677-ad81-5c3004b09325 method=GET path=/api/system/broadcasts/active status=200 latency_ms=131
+INFO:     127.0.0.1:62906 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=8c2fc5c7-5f14-4416-ac18-99ec7d35c59a method=GET path=/api/admin/metrics status=200 latency_ms=761
+INFO:     127.0.0.1:62906 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=90901215-afe2-4c20-a86b-a014019ad3cf method=GET path=/api/system/broadcasts/active status=200 latency_ms=185
+INFO:     127.0.0.1:52321 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=428654f7-6745-4902-9e75-35c7d114831d method=GET path=/api/system/broadcasts/active status=200 latency_ms=118
+INFO:     127.0.0.1:50186 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=e2730878-a8b3-4c39-af49-36e6db23a5ef method=GET path=/api/admin/metrics status=200 latency_ms=503
+INFO:     127.0.0.1:50186 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=6e2c0ff2-da48-479c-95e9-ae4744696fd8 method=GET path=/api/system/broadcasts/active status=200 latency_ms=128
+INFO:     127.0.0.1:54534 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=d01e3868-4700-4a37-8c5d-2ccfe851547b method=GET path=/api/system/broadcasts/active status=200 latency_ms=145
+INFO:     127.0.0.1:65143 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=3d7be6e5-cbd6-40c9-bc95-74b6a2a331ac method=GET path=/api/admin/metrics status=200 latency_ms=545
+INFO:     127.0.0.1:65143 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=cdda2f6b-979b-453b-8c5c-a9cd348cf573 method=GET path=/api/system/broadcasts/active status=200 latency_ms=133
+INFO:     127.0.0.1:54486 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=b78794b1-64f6-42c2-87ad-662a68d8da26 method=GET path=/api/system/broadcasts/active status=200 latency_ms=130
+INFO:     127.0.0.1:64544 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=77407955-fae7-4a7a-9337-13964551ca54 method=GET path=/api/admin/metrics status=200 latency_ms=545
+INFO:     127.0.0.1:64544 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=edf91a0e-2e17-4fd8-8e0d-8962f3dd6c7f method=GET path=/api/system/broadcasts/active status=200 latency_ms=153
+INFO:     127.0.0.1:53143 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=82b3cd19-d52e-4d0e-a0e7-b9a7ff6a1de2 method=GET path=/api/system/broadcasts/active status=200 latency_ms=135
+INFO:     127.0.0.1:55311 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=754fc9c6-1188-40b6-84f9-563f989cb37f method=GET path=/api/admin/metrics status=200 latency_ms=613
+INFO:     127.0.0.1:55311 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=212823b6-7cc0-4bd7-abba-2f42a34292b7 method=GET path=/api/system/broadcasts/active status=200 latency_ms=165
+INFO:     127.0.0.1:54934 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=cbfc1b78-8c61-4c88-8de2-b9e7a26937b8 method=GET path=/api/system/broadcasts/active status=200 latency_ms=150
+INFO:     127.0.0.1:62824 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=5a6ae724-7024-4b9b-9538-ac9d3f31a8e7 method=GET path=/api/admin/metrics status=200 latency_ms=535
+INFO:     127.0.0.1:62824 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=edced41e-ae1d-45bd-8bae-a4f73f0e8cd6 method=GET path=/api/system/broadcasts/active status=200 latency_ms=382
+INFO:     127.0.0.1:65323 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=f65bc4fd-cdf5-4f5a-83c8-912110e8bd4b method=GET path=/api/system/broadcasts/active status=200 latency_ms=482
+INFO:     127.0.0.1:57681 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=0ad06189-5b17-4b08-82e2-79f920f6d28d method=GET path=/api/admin/metrics status=200 latency_ms=2051
+INFO:     127.0.0.1:57681 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=88ad4eac-c021-4ab7-a4d5-3dc677838b76 method=GET path=/api/system/broadcasts/active status=200 latency_ms=322
+INFO:     127.0.0.1:62254 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=2a02fdcd-06b3-48fd-bdab-bfadec016c55 method=GET path=/api/system/broadcasts/active status=200 latency_ms=409
+INFO:     127.0.0.1:58303 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=d67d2fd4-f832-4e54-8b4b-42004d6df9fc method=GET path=/api/admin/metrics status=200 latency_ms=1616
+INFO:     127.0.0.1:58303 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=42f1a143-9aef-4b0e-92ad-3fdb59a0c02f method=GET path=/api/system/broadcasts/active status=200 latency_ms=253
+INFO:     127.0.0.1:50888 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=81286eab-da3e-480c-8e5b-a6f1263377b8 method=GET path=/openapi.json status=200 latency_ms=13
+INFO:     127.0.0.1:50976 - "GET /openapi.json HTTP/1.1" 200 OK
+request_id=0ba7316b-ba5e-4c21-bbc6-ed50870ed69d method=GET path=/api/system/broadcasts/active status=200 latency_ms=538
+INFO:     127.0.0.1:50971 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=fc3c28d2-fa7d-486d-98fc-7b6d6bdd5ca7 method=GET path=/api/admin/metrics status=200 latency_ms=1968
+INFO:     127.0.0.1:50971 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=8eed7455-d0ca-4aec-a0b8-3dba3ff187f9 method=GET path=/api/system/broadcasts/active status=200 latency_ms=297
+INFO:     127.0.0.1:61162 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=330a3645-e0a1-4cbc-bc98-90a9a8f30b26 method=GET path=/api/system/broadcasts/active status=200 latency_ms=368
+INFO:     127.0.0.1:56691 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=45f6dfae-2d22-40e3-8ef1-3d5a5feaf736 method=GET path=/api/admin/metrics status=200 latency_ms=1736
+INFO:     127.0.0.1:56691 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=e02e75c5-15c4-468e-98a8-bddc57b6ed00 method=GET path=/api/system/broadcasts/active status=200 latency_ms=202
+INFO:     127.0.0.1:55879 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=2c692dd2-5676-4174-a8d0-1cd49396fc75 method=GET path=/api/system/broadcasts/active status=200 latency_ms=415
+INFO:     127.0.0.1:64601 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=a8c43dd0-9c28-42eb-966d-e380a8fb4e70 method=GET path=/api/admin/metrics status=200 latency_ms=914
+INFO:     127.0.0.1:64601 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=d42c93cb-1d50-4463-bf45-66980f13d36a method=GET path=/api/system/broadcasts/active status=200 latency_ms=722
+INFO:     127.0.0.1:58594 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=46e61ea3-b667-4911-be55-00397f5899b0 method=GET path=/api/system/broadcasts/active status=200 latency_ms=235
+INFO:     127.0.0.1:64616 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=ca885322-f176-40c7-95ba-de123b2ec2a8 method=GET path=/api/admin/metrics status=200 latency_ms=1060
+INFO:     127.0.0.1:64616 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=6a71e87c-35a0-4a8a-a606-1eb0f6b495c4 method=GET path=/api/system/broadcasts/active status=200 latency_ms=409
+INFO:     127.0.0.1:61069 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=56c12249-c297-4503-bd08-05267d70f942 method=GET path=/api/system/broadcasts/active status=200 latency_ms=374
+INFO:     127.0.0.1:54670 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=fa6c6ccb-0f1b-4d19-ab76-c1be360ca593 method=GET path=/api/admin/metrics status=200 latency_ms=1879
+INFO:     127.0.0.1:54670 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=b29806d1-fd36-4743-8fdf-7d80fa37593e method=GET path=/api/system/broadcasts/active status=200 latency_ms=207
+INFO:     127.0.0.1:50096 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=06037a74-08c8-463c-8291-aad0f599d0f5 method=GET path=/openapi.json status=200 latency_ms=11
+INFO:     127.0.0.1:54951 - "GET /openapi.json HTTP/1.1" 200 OK
+request_id=a87a8439-42a8-45da-bb32-36007afa7ae5 method=GET path=/api/system/broadcasts/active status=200 latency_ms=1063
+INFO:     127.0.0.1:54947 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=be8fbb69-e0e1-48de-9119-f0a5b6d3bfcf method=GET path=/api/admin/metrics status=200 latency_ms=4963
+INFO:     127.0.0.1:51279 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=dbf88b96-dbba-4648-a7b6-37648cca91b6 method=GET path=/api/system/broadcasts/active status=200 latency_ms=675
+INFO:     127.0.0.1:63776 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61014 - "OPTIONS /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=e2e5d644-c33f-4dce-8ef2-4a06c373b62c method=GET path=/api/system/broadcasts/active status=200 latency_ms=534
+INFO:     127.0.0.1:61014 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61014 - "OPTIONS /api/admin/metrics HTTP/1.1" 200 OK
+request_id=d3455d00-3e63-45f2-8d99-60d35228dd97 method=GET path=/api/admin/metrics status=200 latency_ms=2494
+INFO:     127.0.0.1:61014 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=91baf175-498c-4d48-9ce2-99da09254e5e method=GET path=/api/system/broadcasts/active status=200 latency_ms=419
+INFO:     127.0.0.1:49399 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=6c5e5888-6175-47c7-87cc-9f0a850006e3 method=GET path=/api/system/broadcasts/active status=200 latency_ms=422
+INFO:     127.0.0.1:58100 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=355ffaef-204a-407d-96a1-b69d99861296 method=GET path=/api/admin/metrics status=200 latency_ms=2043
+INFO:     127.0.0.1:58100 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=509104d1-bde7-4332-9623-4e33a55a3d7f method=GET path=/api/system/broadcasts/active status=200 latency_ms=1031
+INFO:     127.0.0.1:52465 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=03452e26-93b3-4ace-a7a4-6221b6871e54 method=GET path=/api/system/broadcasts/active status=200 latency_ms=450
+INFO:     127.0.0.1:60266 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=cf45315d-93e4-4371-bfc7-d94828327a46 method=GET path=/api/admin/metrics status=200 latency_ms=2218
+INFO:     127.0.0.1:60266 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=48f5ccd8-7994-4574-91f2-89204f6b3472 method=GET path=/api/system/broadcasts/active status=200 latency_ms=427
+INFO:     127.0.0.1:55218 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=dc251259-e3c5-4c45-9f12-b0650dabf3f2 method=GET path=/api/system/broadcasts/active status=200 latency_ms=404
+INFO:     127.0.0.1:58406 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=a976f3e3-5296-47d6-ad49-1f47c77937f0 method=GET path=/api/admin/metrics status=200 latency_ms=2050
+INFO:     127.0.0.1:58406 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=9fcadc96-df14-4a1c-8e2a-c10bf0938885 method=GET path=/api/system/broadcasts/active status=200 latency_ms=554
+INFO:     127.0.0.1:49363 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=b3a215b5-c735-4fbc-abab-8cca23cf4534 method=GET path=/api/system/broadcasts/active status=200 latency_ms=640
+INFO:     127.0.0.1:60432 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=bd4647a4-5056-4048-9398-b9b369375c65 method=GET path=/api/admin/metrics status=200 latency_ms=2982
+INFO:     127.0.0.1:60432 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=666bc674-8b75-4357-a164-bde76b9353cf method=GET path=/api/system/broadcasts/active status=200 latency_ms=385
+INFO:     127.0.0.1:50209 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=9cdf8074-ad1d-40ee-adef-3805b44d9878 method=GET path=/api/system/broadcasts/active status=200 latency_ms=503
+INFO:     127.0.0.1:49886 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=279e4948-4215-4319-b048-100d6c235115 method=GET path=/api/admin/metrics status=200 latency_ms=1548
+INFO:     127.0.0.1:49886 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=9b895cc8-e60b-4801-a38d-80f88df9dc6a method=GET path=/api/system/broadcasts/active status=200 latency_ms=378
+INFO:     127.0.0.1:53513 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=aea5afdc-c837-461d-9920-45aa4cef97f7 method=GET path=/api/system/broadcasts/active status=200 latency_ms=561
+INFO:     127.0.0.1:52439 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=1e3bf715-2994-47df-88b2-a0fb26c38f95 method=GET path=/api/admin/metrics status=200 latency_ms=1948
+INFO:     127.0.0.1:52439 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=026cf4ef-9e21-4bc5-ba86-f67f50cc67cd method=GET path=/api/system/broadcasts/active status=200 latency_ms=574
+INFO:     127.0.0.1:52372 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=47402c7c-8c8e-4b25-ad62-525be68ed979 method=GET path=/api/system/broadcasts/active status=200 latency_ms=685
+INFO:     127.0.0.1:61767 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=d01ff6b9-2cf6-43d2-893e-c3805c3810b3 method=GET path=/api/admin/metrics status=200 latency_ms=2970
+INFO:     127.0.0.1:61767 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=059a5fb8-7b57-4b75-8965-37601a8901ba method=GET path=/api/system/broadcasts/active status=200 latency_ms=410
+INFO:     127.0.0.1:59195 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=e6096b38-da4e-4917-8efc-1b4aa2973ac2 method=GET path=/api/system/broadcasts/active status=200 latency_ms=384
+INFO:     127.0.0.1:51282 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=05920130-7c9b-4385-acd5-5db925067083 method=GET path=/api/admin/metrics status=200 latency_ms=1750
+INFO:     127.0.0.1:51282 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=8a27bdfb-74c4-48df-9064-ba1690a75aca method=GET path=/api/system/broadcasts/active status=200 latency_ms=466
+INFO:     127.0.0.1:55138 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=09035b8d-c378-42fc-893d-515e476844db method=GET path=/api/system/broadcasts/active status=200 latency_ms=312
+INFO:     127.0.0.1:61645 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=5d0572d1-cab6-4232-9549-efc42c92d696 method=GET path=/api/admin/metrics status=200 latency_ms=1367
+INFO:     127.0.0.1:61645 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=7c02a2cd-0ef1-4e37-abc0-3ad0a3007a6f method=GET path=/api/system/broadcasts/active status=200 latency_ms=402
+INFO:     127.0.0.1:53286 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=65b531f1-5902-4e22-a7fd-adfa9744a4c7 method=GET path=/api/system/broadcasts/active status=200 latency_ms=297
+INFO:     127.0.0.1:59625 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=5a02e48d-df55-4b30-be7c-7d03f66c5b6a method=GET path=/api/admin/metrics status=200 latency_ms=1456
+INFO:     127.0.0.1:59625 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=8dc1a3a1-994c-4c98-8c9b-6b8978bd9848 method=GET path=/api/system/broadcasts/active status=200 latency_ms=191
+INFO:     127.0.0.1:53034 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=f7d5b756-4046-4ade-9d6f-2a9f2edd4507 method=GET path=/api/system/broadcasts/active status=200 latency_ms=452
+INFO:     127.0.0.1:55754 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=9b5671fe-f0fe-4f69-a9c8-477579df09e3 method=GET path=/api/admin/metrics status=200 latency_ms=1746
+INFO:     127.0.0.1:55754 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=ebabad23-29c7-4db4-843c-29138bed6080 method=GET path=/api/system/broadcasts/active status=200 latency_ms=354
+INFO:     127.0.0.1:57626 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=0e453228-b975-4c40-a4a8-69bdd47496a2 method=GET path=/api/system/broadcasts/active status=200 latency_ms=382
+INFO:     127.0.0.1:59941 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=25e337df-eee2-41f5-8107-dd5fbab5f883 method=GET path=/api/admin/metrics status=200 latency_ms=1818
+INFO:     127.0.0.1:59941 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=ab28acb0-e872-4b63-87b6-9aacee9db282 method=GET path=/api/system/broadcasts/active status=200 latency_ms=1556
+INFO:     127.0.0.1:63834 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=f9f3c335-f066-40c3-acaa-fdd9c2d2ee97 method=GET path=/api/system/broadcasts/active status=200 latency_ms=473
+INFO:     127.0.0.1:54347 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=ec3e0054-1eb7-440d-abb0-d6ff1d05dffb method=GET path=/api/admin/metrics status=200 latency_ms=966
+INFO:     127.0.0.1:54347 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=61c2e596-8675-4524-8c67-f6fb04415ccd method=GET path=/api/system/broadcasts/active status=200 latency_ms=353
+INFO:     127.0.0.1:50205 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=cb3e9331-0c4b-4ded-af7a-f6b1068866db method=GET path=/api/system/broadcasts/active status=200 latency_ms=713
+INFO:     127.0.0.1:55162 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=f9db4242-46b0-461f-be6a-9957ae63a960 method=GET path=/api/admin/metrics status=200 latency_ms=2784
+INFO:     127.0.0.1:55162 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=1cfbefb0-e2c2-4d13-8367-6d1c7951756e method=GET path=/api/system/broadcasts/active status=200 latency_ms=428
+INFO:     127.0.0.1:55578 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=fa3de116-182e-4354-aa37-a570178ec89a method=GET path=/api/system/broadcasts/active status=200 latency_ms=307
+INFO:     127.0.0.1:57886 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=1cdc2b66-4700-48da-b51e-744267de9962 method=GET path=/api/admin/metrics status=200 latency_ms=1291
+INFO:     127.0.0.1:57886 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=cac27a41-2ef7-4385-884d-faeaa807bf99 method=GET path=/api/system/broadcasts/active status=200 latency_ms=286
+INFO:     127.0.0.1:50586 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=71e93100-4492-4bfb-b86c-192147dfef60 method=GET path=/api/system/broadcasts/active status=200 latency_ms=736
+INFO:     127.0.0.1:65095 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=0fc69fa4-e922-4bbb-ba2c-596384133b4f method=GET path=/api/admin/metrics status=200 latency_ms=2680
+INFO:     127.0.0.1:65095 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=2e5df9c5-27d9-4005-8968-1cc459a172b3 method=GET path=/api/system/broadcasts/active status=200 latency_ms=852
+INFO:     127.0.0.1:60005 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=2b344ea1-b6c7-4155-8a9b-7bcab9662806 method=GET path=/api/system/broadcasts/active status=200 latency_ms=290
+INFO:     127.0.0.1:63842 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=3b424e3b-36fe-46cc-8522-4e0b4dc5e81e method=GET path=/api/admin/metrics status=200 latency_ms=1379
+INFO:     127.0.0.1:63842 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=06cab1be-85b6-42fb-8cb9-a6595c7d433a method=GET path=/api/system/broadcasts/active status=200 latency_ms=163
+INFO:     127.0.0.1:51659 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=e135a7bb-8723-4bd1-8e44-c3ef63785dad method=GET path=/api/system/broadcasts/active status=200 latency_ms=899
+INFO:     127.0.0.1:60862 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=326d0ea5-af6e-4111-8901-54695d21e5aa method=GET path=/api/admin/metrics status=200 latency_ms=3608
+INFO:     127.0.0.1:60862 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=059843fb-f59c-4b07-8f9a-0824c48a1922 method=GET path=/api/system/broadcasts/active status=200 latency_ms=1201
+INFO:     127.0.0.1:63055 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=713c3447-8d3d-4241-810a-fb6d1ac61c1f method=GET path=/api/system/broadcasts/active status=200 latency_ms=671
+INFO:     127.0.0.1:58304 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=5446b4f4-0c39-42d5-9e4a-296bac9ed3bc method=GET path=/api/admin/metrics status=200 latency_ms=3514
+INFO:     127.0.0.1:58304 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=feb5ef57-cd8b-4d9f-b2d7-351895f0a999 method=GET path=/api/system/broadcasts/active status=200 latency_ms=466
+INFO:     127.0.0.1:60552 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=6b15c3fd-10d9-4c41-8d31-c338235b453a method=GET path=/api/system/broadcasts/active status=200 latency_ms=282
+INFO:     127.0.0.1:63615 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63615 - "OPTIONS /api/admin/metrics HTTP/1.1" 200 OK
+request_id=91abfc15-be15-484b-ae34-8a2fe8f69efb method=GET path=/api/admin/metrics status=200 latency_ms=1199
+INFO:     127.0.0.1:63615 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56005 - "OPTIONS /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=774d79fc-a909-4ecb-9c66-a90c8ae11fa8 method=GET path=/api/system/broadcasts/active status=200 latency_ms=165
+INFO:     127.0.0.1:56005 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=4b56b31d-ab08-4910-9f94-cc4dfda7c840 method=GET path=/api/system/broadcasts/active status=200 latency_ms=634
+INFO:     127.0.0.1:55728 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=99121387-f0ad-40f5-ae14-a7ceea02e07b method=GET path=/api/admin/metrics status=200 latency_ms=2233
+INFO:     127.0.0.1:55728 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=e49f7cb4-9df9-42e0-a390-a62bb51935d2 method=GET path=/api/system/broadcasts/active status=200 latency_ms=219
+INFO:     127.0.0.1:53279 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=eabfadec-bdd8-458b-9a6e-c22062c6257f method=GET path=/openapi.json status=200 latency_ms=12
+INFO:     127.0.0.1:65418 - "GET /openapi.json HTTP/1.1" 200 OK
+request_id=059720a2-cb4b-44f9-b91e-c1022c124311 method=GET path=/api/system/broadcasts/active status=200 latency_ms=388
+INFO:     127.0.0.1:58398 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=dae965e9-31fa-4921-88e7-166f3320427e method=GET path=/api/admin/metrics status=200 latency_ms=3360
+INFO:     127.0.0.1:58398 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=6d3d5797-1092-4a3e-93b2-743ce0b86dc8 method=GET path=/api/system/broadcasts/active status=200 latency_ms=219
+INFO:     127.0.0.1:51964 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=d2938a01-cf83-431d-9251-d54ed775d775 method=GET path=/api/system/broadcasts/active status=200 latency_ms=548
+INFO:     127.0.0.1:59369 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=d8ed72e0-64b0-409d-87fd-822c724648e5 method=GET path=/api/admin/metrics status=200 latency_ms=1892
+INFO:     127.0.0.1:59369 - "GET /api/admin/metrics HTTP/1.1" 200 OK
+request_id=57e0ec3e-0426-49e5-81df-6de49f1b30fd method=GET path=/api/system/broadcasts/active status=200 latency_ms=585
+INFO:     127.0.0.1:62976 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=381c38c4-94f7-4f9c-be9f-fe2abbf8b08f method=GET path=/api/system/broadcasts/active status=200 latency_ms=112
+INFO:     127.0.0.1:61281 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+request_id=8f7a1fef-c40f-4292-87a3-85b3080fe6b1 method=GET path=/api/admin/metrics status=200 latency_ms=600
+INFO:     127.0.0.1:61281 - "GET /api/admin/metrics HTTP/1.1" 200 OK

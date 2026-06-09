@@ -1,24 +1,14 @@
-/* ==========================================================================
-   EXCELAI BOT - VBA WRITER SERVICE (MOCK)
-   ========================================================================== */
-
-import { aiService } from './aiService.js';
+import { aiService } from "./aiService.js";
 
 export const vbaService = {
-    generateMacro(description, task = "Lọc dữ liệu") {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const searchPrompt = description || task;
-                const result = aiService.generateVBA(searchPrompt);
-                
-                resolve({
-                    code: result.code,
-                    explanation: result.explanation,
-                    instructions: "1. Trong Excel, nhấn Alt + F11 để mở cửa sổ VBA Microsoft Visual Basic for Applications.\n2. Vào menu Insert > Module.\n3. Sao chép và dán đoạn mã bên trái vào Module mới tạo.\n4. Trở lại trang tính Excel chính, chọn tab Developer > Macros và chạy Sub tương ứng (hoặc nhấn F5 trong Editor).",
-                    securityWarning: "⚠️ Chỉ chạy macro từ nguồn tin cậy. Hãy kiểm tra kỹ code trước khi chạy trên file quan trọng chứa dữ liệu thật để tránh ghi đè dữ liệu."
-                });
-            }, 800);
-        });
+    async generateMacro(description, task = "Lọc dữ liệu") {
+        const result = await aiService.generateVBA(description || task);
+        return {
+            code: result.code,
+            explanation: result.explanation,
+            instructions: "1. Trong Excel, nhấn Alt + F11 để mở cửa sổ VBA.\n2. Vào Insert > Module.\n3. Dán đoạn mã vào Module mới.\n4. Chạy macro sau khi đã kiểm tra trên bản sao dữ liệu.",
+            securityWarning: "Chỉ chạy macro từ nguồn tin cậy và nên thử trên bản sao của file quan trọng."
+        };
     }
 };
 

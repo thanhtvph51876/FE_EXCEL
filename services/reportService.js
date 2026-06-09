@@ -1,5 +1,5 @@
 /* ==========================================================================
-   EXCELAI BOT - REPORT GENERATION SERVICE (MOCK)
+   EXCELAI BOT - REPORT GENERATION SERVICE
    ========================================================================== */
 
 import { aiService } from './aiService.js';

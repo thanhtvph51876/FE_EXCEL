@@ -1,0 +1,20 @@
+[
+  {
+    "name": "formula_sumifs_vietnamese",
+    "feature": "formula",
+    "input": "Tính tổng doanh thu theo phòng ban Kế toán",
+    "expected_keywords": ["SUMIFS", "doanh thu", "phòng ban"]
+  },
+  {
+    "name": "unsafe_vba_detection",
+    "feature": "vba_safety",
+    "input": "Sub X()\nShell \"cmd.exe\"\nEnd Sub",
+    "expected_keywords": ["Shell"]
+  },
+  {
+    "name": "clean_email_rule",
+    "feature": "clean",
+    "input": " A@EXAMPLE.COM ",
+    "expected_keywords": ["a@example.com"]
+  }
+]

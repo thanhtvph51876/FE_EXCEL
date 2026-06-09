@@ -1,76 +1,182 @@
-# AI Excel & Office Autopilot — Frontend MVP Final
+# ExcelAI & Office Autopilot SaaS
 
-Trang web ứng dụng hỗ trợ người dùng tự động hóa công việc văn phòng & xử lý dữ liệu Excel bằng trí tuệ nhân tạo (AI), sở hữu giao diện **Glassmorphism** tối giản, sang trọng đi kèm hiệu ứng chuyển động mượt mà và các tính năng tương tác phong phú.
+ExcelAI & Office Autopilot SaaS giúp người dùng xử lý Excel/CSV bằng AI theo 3 workflow có giá trị thương mại:
 
-Tài liệu này đánh dấu trạng thái **FRONTEND MVP FINAL — READY FOR BACKEND**, sẵn sàng chuyển giao cho kỹ sư Backend.
+- **Clean Data**: upload file, rà lỗi dữ liệu, chọn rule làm sạch, export XLSX thật.
+- **Reconcile**: đối soát 2 file/sheet theo key và cột giá trị, export báo cáo XLSX thật.
+- **Report/Document Builder**: tạo báo cáo hoặc văn bản có cấu trúc, export DOCX/PDF cơ bản.
 
----
+Các module phụ vẫn giữ: Formula Lab, VBA Writer, Chat with file, Table Builder, Templates, History, Billing và Admin Panel.
 
-## 🌟 Định Vị & Tính Năng Sản Phẩm
+## Stack
 
-Sản phẩm đã được nâng cấp toàn diện từ một prototype đơn giản thành giải pháp tự động hóa toàn diện: **AI Excel & Office Autopilot**. Không chỉ là chatbot, sản phẩm hỗ trợ:
-* Rà soát lỗi dữ liệu (Email sai cú pháp, giá trị âm, lịch không hợp lệ).
-* Đối soát chênh lệch số dư/giao dịch giữa hai bảng tính A và B.
-* Sinh công thức Excel và viết mã VBA/Macro tự động, an toàn.
-* Tự động hóa soạn thảo văn bản từ dữ liệu bảng tính.
-* Tạo lập bảng dữ liệu theo mô tả tiếng Việt.
+- Frontend: static HTML/CSS/ES module JavaScript.
+- Backend: FastAPI.
+- Database: PostgreSQL/pgAdmin 4.
+- Auth: bcrypt + JWT.
+- AI provider: Gemini.
+- Storage: local file storage trong MVP.
+- Excel output: `openpyxl`.
+- DOCX/PDF output: backend-generated Office/PDF files.
 
-### 1. Landing Page (Trang chủ & Bảng giá)
-* **Demo Tương Tác 6 Tabs**: Cho phép người dùng trải nghiệm nhanh cách hoạt động của AI (Tạo bảng từ mô tả, Tự nhập số liệu, Rà soát lỗi file, Sinh công thức, Viết VBA, Tạo báo cáo) kèm theo huy hiệu `DEMO MODE` và các nút sao chép kết quả.
-* **Bảng Giá SaaS Tiers**: Tích hợp nút chuyển đổi chu kỳ thanh toán Tháng/Năm giảm 20%.
+## Cấu Trúc
 
-### 2. Workspace Người Dùng (User Workspace - 16 Tabs)
-Tất cả 16 tabs được phân nhóm rõ ràng trên Sidebar:
-1. **Tổng Quan (Dashboard)**: Thống kê nhanh lượt sử dụng, thời gian tiết kiệm, lối tắt và nhật ký hoạt động.
-2. **AI Autopilot**: Trình tự động hóa công việc theo mục tiêu người dùng.
-3. **AI Table Builder**: Tạo bảng cấu trúc từ mô tả tiếng Việt.
-4. **AI Doc Builder**: Soạn thảo tài liệu văn phòng tự động.
-5. **Sinh Công Thức (Formula Lab)**: Sinh công thức từ mô tả tiếng Việt kèm chạy thử.
-6. **Viết VBA (VBA Writer)**: Sinh macro VBA định dạng và xử lý dữ liệu.
-7. **Quản Lý Tệp (File Manager)**: Quản lý và xem trước tệp Excel/CSV.
-8. **Rà Soát Lỗi (Data Checker)**: Quét lỗi định dạng trên tệp.
-9. **Làm Sạch (Data Cleaning)**: Chuẩn hóa khoảng trắng, email, số điện thoại.
-10. **Trợ Lý AI (Chatbot)**: Trò chuyện hỏi đáp sâu về file dữ liệu.
-11. **Đối Soát (Reconciliation)**: So khớp dữ liệu chênh lệch giữa hai bảng tính.
-12. **Báo Cáo (Reports)**: Lập biểu đồ trực quan hóa dữ liệu tự động.
-13. **Mẫu Excel (Templates)**: Thư viện tệp mẫu theo ngành nghề.
-14. **Lịch Sử (History)**: Nhật ký hoạt động chi tiết.
-15. **Thanh Toán (Billing)**: Quản lý gói cước và mô phỏng thanh toán thẻ tín dụng.
-16. **Cấu Hình (Settings)**: Thiết lập cấu hình Workspace.
-
-### 3. Trang Quản Trị Hệ Thống (Admin Panel - 14 Tabs)
-Trang quản trị toàn diện cho phép theo dõi doanh thu MRR, cấu hình System Prompts, kiểm tra nhật ký lỗi máy chủ, quản lý người dùng (Khóa/Mở khóa), quản lý feature flags và phân quyền.
-
----
-
-## 🛠️ Kiến Trúc Frontend & Các Điểm Cần Lưu Ý
-
-1. **Modular Service Layer (`/services`)**: Mọi logic tương tác của 16 tab người dùng và 14 tab admin đã được tách rời khỏi UI, trả về Promise kèm độ trễ **500 - 1200ms** giả lập kết nối API thật.
-2. **Sửa Lỗi Runtime**: Rà soát và thêm null guards cho toàn bộ sự kiện click/input. Khắc phục triệt để lỗi console do thiếu các selector cũ đã bị xóa khỏi HTML.
-3. **An Toàn Dữ Liệu**:
-   - Tích hợp helper `escapeHTML` chống XSS khi hiển thị dữ liệu động từ tệp tin tải lên.
-   - Giới hạn render preview bảng tính tối đa 100 dòng kèm cảnh báo chi tiết.
-   - Định dạng API keys thành dạng an toàn `demo_key_` và che giấu (masking) khi hiển thị.
-4. **Excel Add-in Connection**: Hỗ trợ Office.js SDK. Tự động hiển thị các nút nạp dữ liệu khi chạy trong môi trường Microsoft Excel thực tế.
-
----
-
-## 📂 Tài Liệu Chuyển Giao Cho Backend Developer
-
-Vui lòng tham khảo bộ 3 tài liệu bàn giao tại thư mục gốc để triển khai API:
-1. **[API_CONTRACT.md](file:///H:/Trang%20web%20giao%20dien%20bot%20excel/API_CONTRACT.md)**: Đặc tả endpoints, request/response payload và error codes.
-2. **[DATA_MODEL.md](file:///H:/Trang%20web%20giao%20dien%20bot%20excel/DATA_MODEL.md)**: Thiết kế mô hình cơ sở dữ liệu đề xuất.
-3. **[FRONTEND_HANDOFF.md](file:///H:/Trang%20web%20giao%20dien%20bot%20excel/FRONTEND_HANDOFF.md)**: Hướng dẫn thay thế mock layer và lưu ý kỹ thuật.
-
----
-
-## 🚀 Hướng Dẫn Khởi Chạy
-Bạn có thể khởi chạy server demo bằng máy chủ cục bộ:
-```bash
-# Sử dụng Python http server
-python -m http.server 8000
-
-# Hoặc sử dụng Node serve / live-server
-npx live-server
+```text
+.
+├── index.html, app.js, styles.css
+├── services/
+├── docs/
+├── backend/
+│   ├── main.py
+│   ├── routers/
+│   ├── services/
+│   ├── entitlements.py
+│   ├── auth_policy.py
+│   ├── schema.sql
+│   └── security_runtime_tests.py
+└── API_CONTRACT.md
 ```
-Truy cập ứng dụng tại `http://localhost:8000`.
+
+## Environment
+
+`backend/.env`:
+
+```env
+ENVIRONMENT=development
+FRONTEND_URL=http://localhost:5500
+CORS_ORIGINS=http://localhost:5500,http://127.0.0.1:5500
+
+DATABASE_URL=
+DB_HOST=localhost
+DB_PORT=2005
+DB_NAME=excelai
+DB_USER=postgres
+DB_PASSWORD=your-postgres-password
+
+JWT_SECRET=change-this-secret
+GEMINI_API_KEY=AIzaSy...
+GEMINI_MODEL=gemini-2.5-flash
+
+STORAGE_BACKEND=local
+LOCAL_STORAGE_DIR=./storage
+STORAGE_BUCKET=excel-files
+
+PAYMENT_MANUAL_ENABLED=true
+```
+
+## Chạy Local
+
+Backend:
+
+```powershell
+cd "H:\Trang web giao diện bot excel\backend"
+.\.venv\Scripts\Activate.ps1
+python -m uvicorn main:app --host 127.0.0.1 --port 8002
+```
+
+Trên Windows máy này nên tránh `--reload`.
+
+Frontend:
+
+```powershell
+cd "H:\Trang web giao diện bot excel"
+python -m http.server 5500
+```
+
+Mở `http://localhost:5500`.
+
+## Database
+
+Tạo database `excelai`, sau đó chạy `backend/schema.sql`. Schema hiện có:
+
+- `users`
+- `files`
+- `output_files`
+- `checkout_requests`
+- `ai_usage`
+- `ai_usage_events`
+- `billing_tier_audit`
+- `operation_logs`
+- settings/admin/support tables
+
+Admin tổng chỉ hợp lệ khi:
+
+- `email = admin150905@gmail.com`
+- `role = admin`
+
+## Entitlement Theo Gói
+
+Config server-side nằm ở `backend/entitlements.py`, gồm:
+
+- `free`
+- `pro`
+- `business`
+- `enterprise`
+
+Backend kiểm tra quyền tính năng và quota, không tin client gửi tier/quota. User thường không thể tự nâng gói. `PUT /api/billing/tier` trả `403`.
+
+## Payment Manual
+
+MVP hiện dùng manual checkout:
+
+1. User chọn gói.
+2. Backend tạo `checkout_requests.status=pending`.
+3. User thấy hướng dẫn thanh toán/liên hệ admin.
+4. Admin xác nhận bằng API admin.
+5. Backend đổi tier qua admin path, ghi `billing_tier_audit` và `operation_logs`.
+
+Chưa có payment provider/webhook tự động. Không tự động nâng tier nếu chưa verify chữ ký provider thật.
+
+## Export Output Thật
+
+Backend tạo và lưu output trong `output_files`:
+
+- Clean Data -> XLSX thật.
+- Reconcile -> XLSX thật, sheet `Summary` và `Details`.
+- Document Builder -> DOCX thật.
+- PDF -> PDF cơ bản.
+
+Download output luôn check owner, không trả raw storage path.
+
+## Health
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8002/api/health
+Invoke-RestMethod http://127.0.0.1:8002/api/health/ai
+Invoke-RestMethod http://127.0.0.1:8002/api/health/storage
+```
+
+## Smoke Test
+
+```powershell
+$env:EXCELAI_ADMIN_TEST_PASSWORD="mat-khau-admin"
+python -B backend\security_runtime_tests.py
+```
+
+Script kiểm tra auth/RBAC, billing tier, manual checkout, file ownership, export XLSX/DOCX, upload hardening, entitlement, VBA safety, audit và log.
+
+## Backup/Restore
+
+PostgreSQL backup:
+
+```powershell
+pg_dump -h 127.0.0.1 -p 2005 -U postgres -d excelai -Fc -f excelai.backup
+```
+
+Restore test:
+
+```powershell
+createdb -h 127.0.0.1 -p 2005 -U postgres excelai_restore_test
+pg_restore -h 127.0.0.1 -p 2005 -U postgres -d excelai_restore_test excelai.backup
+```
+
+File storage backup: copy toàn bộ `backend/storage/` sang vị trí backup định kỳ. Khi production, nên dùng object storage và kiểm thử restore cả DB lẫn file output.
+
+## Production Notes
+
+- Đổi `JWT_SECRET`.
+- Cấu hình `CORS_ORIGINS` theo domain thật, không dùng `*`.
+- Bật backup DB/storage.
+- Không log password/token/API key/full prompt/file content.
+- Workspace hiện là personal workspace, chưa phải team/member thật.
+- Có thể thêm Alembic migration structure ở phase deployment chính thức.

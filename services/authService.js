@@ -1,50 +1,42 @@
-/* ==========================================================================
-   EXCELAI BOT - AUTHENTICATION AND ROLE SERVICE (MOCK)
-   ========================================================================== */
+import { apiFetch, clearAuth, getAccessToken, setAuthTokens } from "./config.js";
 
 export const authService = {
-    getCurrentUser() {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const data = localStorage.getItem("excelai_current_user");
-                if (data) {
-                    try {
-                        resolve(JSON.parse(data));
-                        return;
-                    } catch (e) {
-                        console.error("Lỗi parse current user", e);
-                    }
-                }
-                const defaultUser = {
-                    id: 1,
-                    name: "Trần Minh Trí",
-                    email: "trinh@excelai.com",
-                    tier: "free",
-                    usageCount: 12,
-                    usageLimit: 20,
-                    status: "Hoạt động"
-                };
-                localStorage.setItem("excelai_current_user", JSON.stringify(defaultUser));
-                resolve(defaultUser);
-            }, 600);
+    async getCurrentUser() {
+        const token = getAccessToken();
+        if (!token) return null;
+        const user = await apiFetch("/api/auth/me");
+        localStorage.setItem("excelai_current_user", JSON.stringify(user));
+        return user;
+    },
+
+    async login(email, password) {
+        const data = await apiFetch("/api/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ email, password })
         });
+        setAuthTokens(data);
+        return data;
+    },
+
+    async register(name, email, password) {
+        const data = await apiFetch("/api/auth/register", {
+            method: "POST",
+            body: JSON.stringify({ name, email, password })
+        });
+        setAuthTokens(data);
+        return data;
+    },
+
+    async logout() {
+        try {
+            await apiFetch("/api/auth/logout", { method: "POST" });
+        } finally {
+            clearAuth();
+        }
     },
 
     saveCurrentUser(user) {
         localStorage.setItem("excelai_current_user", JSON.stringify(user));
-    },
-
-    switchDemoRole(role) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                localStorage.setItem("excelai_demo_role", role);
-                resolve({ success: true, role });
-            }, 500);
-        });
-    },
-
-    getDemoRole() {
-        return localStorage.getItem("excelai_demo_role") || "user";
     }
 };
 

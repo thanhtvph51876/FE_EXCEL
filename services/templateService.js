@@ -1,67 +1,101 @@
 /* ==========================================================================
-   EXCELAI BOT - SPREADSHEET TEMPLATES SERVICE (MOCK)
+   EXCELAI BOT - SPREADSHEET TEMPLATES SERVICE (WITH LOCAL FALLBACK)
    ========================================================================== */
 
-import { initialTemplates } from './mockData.js';
+import { API_BASE, apiFetch } from "./config.js";
+
+const cache = {
+    templates: []
+};
+
+const fallbackTemplates = [
+    {
+        id: "revenue_report",
+        name: "Báo cáo doanh thu",
+        category: "Kế toán / Tài chính",
+        icon: "📈",
+        image: "assets/images/templates/revenue_report.png",
+        description: "Theo dõi doanh thu bán hàng, lợi nhuận gộp và biểu đồ xu hướng theo từng tháng."
+    },
+    {
+        id: "employee_payroll",
+        name: "Bảng lương nhân viên",
+        category: "Nhân sự / Lương",
+        icon: "👥",
+        image: "assets/images/templates/employee_payroll.png",
+        description: "Tính toán lương thực nhận, bảo hiểm xã hội, thuế thu nhập cá nhân tự động."
+    },
+    {
+        id: "inventory_management",
+        name: "Quản lý tồn kho",
+        category: "Quản lý kho",
+        icon: "📦",
+        image: "assets/images/templates/inventory_management.png",
+        description: "Giám sát số lượng nhập, xuất, tồn kho và cảnh báo mức tồn tối thiểu."
+    },
+    {
+        id: "project_plan",
+        name: "Kế hoạch dự án",
+        category: "Quản lý dự án",
+        icon: "📅",
+        image: "assets/images/templates/project_plan.png",
+        description: "Quản lý tiến độ công việc, sơ đồ Gantt và người chịu trách nhiệm."
+    },
+    {
+        id: "expense_report",
+        name: "Báo cáo chi phí",
+        category: "Kế toán / Tài chính",
+        icon: "💰",
+        image: "assets/images/templates/expense_report.png",
+        description: "Phân loại chi phí vận hành, chi phí sản xuất và phân tích tỷ trọng."
+    },
+    {
+        id: "crm_customer",
+        name: "CRM Khách hàng",
+        category: "Bán hàng / CRM",
+        icon: "🤝",
+        image: "assets/images/templates/crm_customer.png",
+        description: "Quản lý thông tin liên hệ khách hàng, trạng thái chăm sóc và doanh số dự kiến."
+    }
+];
 
 export const templateService = {
-    listTemplates() {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(initialTemplates);
-            }, 500);
-        });
+    async listTemplates() {
+        try {
+            const payload = await apiFetch("/api/templates");
+            cache.templates = Array.isArray(payload.templates) ? payload.templates : [];
+            if (cache.templates.length === 0) {
+                cache.templates = fallbackTemplates;
+            }
+            return cache.templates;
+        } catch (err) {
+            console.warn("Backend API not reachable. Using static template fallbacks.", err);
+            cache.templates = fallbackTemplates;
+            return cache.templates;
+        }
     },
 
-    useTemplate(templateId) {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                const found = initialTemplates.find(t => t.id === templateId);
-                if (found) {
-                    // Define custom schema matching template
-                    let mockSheet = {
-                        name: found.file,
-                        headers: ["STT", "Chỉ tiêu", "Định mức", "Thực tế", "Tỷ lệ hoàn thành"],
-                        rows: [
-                            ["1", "Chỉ tiêu doanh số nhóm A", "100,000,000", "105,000,000", "105%"],
-                            ["2", "Chỉ tiêu doanh số nhóm B", "150,000,000", "135,000,000", "90%"],
-                            ["3", "Tỷ lệ khách hàng hài lòng", "95%", "97%", "102%"]
-                        ]
-                    };
+    loadTemplates() {
+        return cache.templates.length > 0 ? cache.templates : fallbackTemplates;
+    },
 
-                    if (templateId === "t1") {
-                        mockSheet.headers = ["Ngày", "Nội dung giao dịch", "Số tiền Thu", "Số tiền Chi", "Số dư Tồn"];
-                        mockSheet.rows = [
-                            ["01/06/2026", "Số dư tồn quỹ đầu kỳ", "50,000,000", "0", "50,000,000"],
-                            ["02/06/2026", "Thu tiền bán hàng đại lý A", "120,000,000", "0", "170,000,000"],
-                            ["03/06/2026", "Chi thanh toán hóa đơn tiền điện", "0", "8,500,000", "161,500,000"],
-                            ["04/06/2026", "Tạm ứng chi phí đi công tác phòng Kinh Doanh", "0", "15,000,000", "146,500,000"]
-                        ];
-                    } else if (templateId === "t2") {
-                        mockSheet.headers = ["Mã NV", "Họ và Tên", "Lương cứng", "Ngày công thực tế", "Thực nhận"];
-                        mockSheet.rows = [
-                            ["NV001", "Nguyễn Văn Hùng", "18,000,000", "24", "16,615,385"],
-                            ["NV002", "Lê Thị Mai", "12,000,000", "26", "12,000,000"],
-                            ["NV003", "Trần Văn Việt", "15,000,000", "22", "12,692,308"]
-                        ];
-                    } else if (templateId === "t4") {
-                        mockSheet.headers = ["Mã Vật Tư", "Tên Hàng Hóa", "Đơn Vị Tính", "Tồn Đầu Kỳ", "Nhập Kho", "Xuất Kho", "Tồn Cuối Kỳ"];
-                        mockSheet.rows = [
-                            ["VT001", "Sắt cuộn Phi 8", "Tấn", "50", "30", "65", "15"],
-                            ["VT002", "Xi măng Hà Tiên", "Bao", "200", "150", "340", "10"],
-                            ["VT003", "Gạch ống Tuynel", "Viên", "10,000", "5,000", "4,000", "11,000"]
-                        ];
-                    }
-
-                    resolve({
-                        template: found,
-                        mockSheet
-                    });
-                } else {
-                    reject("Mẫu biểu không tồn tại!");
-                }
-            }, 600);
-        });
+    async useTemplate(templateId) {
+        try {
+            const payload = await apiFetch(`/api/templates/${encodeURIComponent(templateId)}`);
+            return {
+                template: payload.template,
+                sheet: null,
+                downloadUrl: `${API_BASE}/api/templates/${encodeURIComponent(templateId)}/download`
+            };
+        } catch (err) {
+            console.warn("Backend API not reachable. Mocking useTemplate for ID:", templateId);
+            const found = this.loadTemplates().find(t => t.id === templateId);
+            return {
+                template: found || { id: templateId, name: "Mẫu biểu" },
+                sheet: null,
+                downloadUrl: "#"
+            };
+        }
     }
 };
 

@@ -1,262 +1,278 @@
-# Hợp Đồng API (API Contract) — ExcelAI & Office Autopilot
+# API Contract - ExcelAI & Office Autopilot SaaS
 
-Tài liệu này định nghĩa các điểm kết nối (endpoints) HTTP RESTful mà Backend cần triển khai để tích hợp với Frontend ExcelAI & Office Autopilot. Tất cả dữ liệu truyền nhận sử dụng định dạng JSON.
+Base URL local: `http://127.0.0.1:8002`
 
----
+Protected APIs require:
 
-## 🔐 1. Xác thực & Phân quyền (Authentication)
+```http
+Authorization: Bearer <jwt>
+```
 
-### 1.1. Đăng nhập (Mock Auth Session)
-* **Endpoint**: `/api/auth/login`
-* **Method**: `POST`
-* **Request Body**:
-  ```json
-  {
-    "email": "trinh@excelai.com",
-    "password": "hashed_password"
-  }
-  ```
-* **Success Response (200 OK)**:
-  ```json
-  {
-    "success": true,
-    "token": "jwt_session_token_here",
-    "user": {
-      "id": 1,
-      "name": "Trần Minh Trí",
-      "email": "trinh@excelai.com",
-      "tier": "free",
-      "usageCount": 12,
-      "usageLimit": 20,
-      "status": "Hoạt động"
-    }
-  }
-  ```
+Backend reloads user from PostgreSQL on every protected request. Client-sent role/tier/quota is never trusted.
 
-### 1.2. Đăng xuất
-* **Endpoint**: `/api/auth/logout`
-* **Method**: `POST`
-* **Success Response (200 OK)**:
-  ```json
-  {
-    "success": true,
-    "message": "Đăng xuất thành công"
-  }
-  ```
+## Response Codes
 
----
+- `200`: success.
+- `201`: created.
+- `400`: invalid payload, sensitive field rejected, unsupported file.
+- `401`: missing/invalid/expired token.
+- `403`: no permission or feature unavailable on current plan.
+- `404`: resource not found or resource belongs to another user.
+- `413`: file size/row count exceeds plan.
+- `422`: invalid state/tier or unsafe VBA blocked.
+- `429`: usage/quota/rate limit reached.
+- `500`: safe internal error message only.
 
-## 📂 2. Quản lý Tệp tin (File Management)
+## Auth
 
-### 2.1. Tải lên tệp (Excel/CSV)
-* **Endpoint**: `/api/files/upload`
-* **Method**: `POST`
-* **Content-Type**: `multipart/form-data`
-* **Request Body**: File binary (Excel/CSV)
-* **Success Response (201 Created)**:
-  ```json
-  {
-    "id": "file_uuid_123",
-    "name": "orders.csv",
-    "size": "45.2 KB",
-    "rowCount": 1420,
-    "colCount": 12,
-    "uploadedAt": "2026-06-04T13:49:33Z"
-  }
-  ```
+### `POST /api/auth/register`
 
-### 2.2. Xem trước tệp (Giới hạn tối đa 100 dòng trên Frontend)
-* **Endpoint**: `/api/files/:id/preview`
-* **Method**: `GET`
-* **Success Response (200 OK)**:
-  ```json
-  {
-    "id": "file_uuid_123",
-    "name": "orders.csv",
-    "headers": ["Mã đơn", "Ngày mua", "Sản phẩm", "Doanh thu"],
-    "rows": [
-      ["OD001", "2026-01-01", "Màn hình Dell", "4500000"],
-      ["OD002", "2026-01-02", "Bàn phím cơ", "1200000"]
-    ],
-    "totalRows": 1420
-  }
-  ```
+Creates a normal user only:
 
-### 2.3. Xóa tệp
-* **Endpoint**: `/api/files/:id`
-* **Method**: `DELETE`
-* **Success Response (200 OK)**:
-  ```json
-  {
-    "success": true,
-    "message": "Đã xóa tệp thành công"
-  }
-  ```
+- `role=user`
+- `tier=free`
+- `status=active`
 
----
+Registering `admin150905@gmail.com` from web returns `403`.
 
-## 🤖 3. Các chức năng AI & Autopilot
+### `POST /api/auth/login`
 
-### 3.1. Rà soát lỗi dữ liệu (Data Quality Checker)
-* **Endpoint**: `/api/ai/data-check`
-* **Method**: `POST`
-* **Request Body**:
-  ```json
-  {
-    "fileId": "file_uuid_123"
-  }
-  ```
-* **Success Response (200 OK)**:
-  ```json
-  {
-    "healthScore": 85.5,
-    "scannedRows": 100,
-    "errors": [
-      { "row": 14, "column": "Email", "value": "tri_gmail.com", "issue": "Lỗi định dạng Email thiếu '@'" },
-      { "row": 35, "column": "Số lượng", "value": "-20", "issue": "Lỗi Outlier: Giá trị âm bất thường" }
-    ]
-  }
-  ```
+Returns JWT and user profile. Login is rate limited.
 
-### 3.2. Làm sạch dữ liệu (Data Cleaning)
-* **Endpoint**: `/api/ai/clean`
-* **Method**: `POST`
-* **Request Body**:
-  ```json
-  {
-    "fileId": "file_uuid_123",
-    "column": "Số điện thoại",
-    "rule": "phone"
-  }
-  ```
-* **Success Response (200 OK)**:
-  ```json
-  {
-    "success": true,
-    "formula": "=SUBSTITUTE(SUBSTITUTE(A2, \" \", \"\"), \"+84\", \"0\")",
-    "previewRows": [
-      { "original": "+84 987 654 321", "cleaned": "0987654321" }
-    ]
-  }
-  ```
+### `GET /api/auth/me`
 
-### 3.3. Đối soát dữ liệu (Reconciliation)
-* **Endpoint**: `/api/ai/reconcile`
-* **Method**: `POST`
-* **Request Body**:
-  ```json
-  {
-    "fileAId": "file_uuid_a",
-    "fileBId": "file_uuid_b",
-    "keyA": "Mã GD",
-    "keyB": "Mã GD",
-    "valA": "Số tiền",
-    "valB": "Số tiền"
-  }
-  ```
-* **Success Response (200 OK)**:
-  ```json
-  {
-    "summary": {
-      "matched": 1250,
-      "mismatched": 12,
-      "missingA": 3,
-      "missingB": 5
-    },
-    "discrepancies": [
-      { "key": "GD_9987", "valA": 5000000, "valB": 4850000, "reason": "Chênh lệch số tiền giao dịch" }
-    ],
-    "aiNarrative": "Hệ thống phát hiện 12 giao dịch lệch tiền..."
-  }
-  ```
+Returns current user from DB.
 
-### 3.4. Sinh công thức Excel
-* **Endpoint**: `/api/ai/formula`
-* **Method**: `POST`
-* **Request Body**:
-  ```json
-  {
-    "prompt": "Tính tổng tiền cột C nếu phòng ban ở cột B là Kế toán",
-    "context": "chung"
-  }
-  ```
-* **Success Response (200 OK)**:
-  ```json
-  {
-    "formula": "=SUMIFS(C:C, B:B, \"Kế toán\")",
-    "explanation": "Tính tổng dải ô C:C khi cột B:B bằng \"Kế toán\""
-  }
-  ```
+### `POST /api/auth/logout`
 
-### 3.5. Viết mã VBA / Macro
-* **Endpoint**: `/api/ai/vba`
-* **Method**: `POST`
-* **Request Body**:
-  ```json
-  {
-    "prompt": "Định dạng in đậm tiêu đề dòng 1 màu xanh lá cây"
-  }
-  ```
-* **Success Response (200 OK)**:
-  ```json
-  {
-    "code": "Sub FormatHeader()\n  With Range(\"A1:G1\")\n    .Font.Bold = True\n    .Interior.Color = RGB(16, 124, 65)\n  End With\nEnd Sub",
-    "explanation": "Mã lệnh định dạng dòng tiêu đề xanh lá cây..."
-  }
-  ```
+Client clears token.
 
----
+## Billing And Entitlements
 
-## 📈 4. Quản trị hệ thống (Admin APIs)
+### `GET /api/billing/pricing`
 
-### 4.1. Lấy chỉ số tổng quan (System Dashboard)
-* **Endpoint**: `/api/admin/metrics`
-* **Method**: `GET`
-* **Success Response (200 OK)**:
-  ```json
-  {
-    "mrr": 59800000,
-    "totalUsers": 2420,
-    "uptime": "99.98%",
-    "apiRequestsCount": 18240
-  }
-  ```
+Returns pricing config and server-side entitlement config.
 
-### 4.2. Cập nhật gói dịch vụ người dùng
-* **Endpoint**: `/api/admin/users/:id/tier`
-* **Method**: `PUT`
-* **Request Body**:
-  ```json
-  {
-    "tier": "pro"
-  }
-  ```
-* **Success Response (200 OK)**:
-  ```json
-  {
-    "success": true,
-    "user": {
-      "id": 1,
-      "tier": "pro"
-    }
-  }
-  ```
+### `GET /api/billing/entitlements`
 
----
+Returns `free/pro/business/enterprise` entitlement definitions.
 
-## 🚨 5. Các mã lỗi chung (Standard Error Codes)
-Hệ thống API trả về định dạng chuẩn khi gặp lỗi:
-* **JSON Schema**:
-  ```json
-  {
-    "success": false,
-    "errorCode": "INVALID_FILE_TYPE",
-    "message": "Tệp tin tải lên không đúng định dạng Excel/CSV."
-  }
-  ```
-* **HTTP Status Codes**:
-  - `400 Bad Request`: Payload không hợp lệ.
-  - `401 Unauthorized`: Token xác thực bị thiếu hoặc hết hạn.
-  - `403 Forbidden`: Tài khoản bị khóa hoặc không đủ quyền truy cập (ví dụ: gói Free gọi API Pro).
-  - `413 Payload Too Large`: Dòng dữ liệu tải lên vượt quá giới hạn hệ thống.
-  - `500 Internal Server Error`: Lỗi máy chủ xử lý AI.
+### `GET /api/billing/tier`
+
+Returns current tier, usage, usage limit, and entitlement for current user.
+
+### `POST /api/billing/checkout`
+
+Creates manual checkout request with `status=pending`. Does not update tier.
+
+Request:
+
+```json
+{
+  "tier": "pro",
+  "billingCycle": "monthly",
+  "couponCode": "OPTIONAL"
+}
+```
+
+Sensitive fields like `role`, `status`, `owner_id`, `plan_id`, `ai_limit`, `usage_limit` are rejected.
+
+### `GET /api/billing/checkout-requests`
+
+Returns current user's manual checkout requests.
+
+### `PUT /api/billing/tier`
+
+Always `403` for users. Users cannot self-upgrade.
+
+## Files
+
+### `POST /api/files/upload`
+
+Multipart field: `file`
+
+Checks:
+
+- owner is current user
+- allowed extensions: `.csv`, `.xlsx`, `.xls`
+- sanitized filename
+- basic magic bytes
+- max file count by plan
+- max file size by plan
+- max row count by plan
+- parse failure stored as `status=failed`
+
+### `GET /api/files`
+
+Lists current user's files only.
+
+### `GET /api/files/{file_id}/preview`
+
+Returns preview if owner. User A reading User B's file returns `404`.
+
+### `DELETE /api/files/{file_id}`
+
+Deletes if owner. User A deleting User B's file returns `404`.
+
+## AI
+
+All AI routes go through backend entitlement/quota checks and `ai_usage_events`.
+
+Routes:
+
+- `POST /api/ai/chat`
+- `POST /api/ai/chat/stream`
+- `POST /api/ai/formula`
+- `POST /api/ai/vba`
+- `POST /api/ai/data-check`
+- `POST /api/ai/clean`
+- `POST /api/ai/reconcile`
+- `POST /api/ai/autopilot`
+- `POST /api/ai/table-builder`
+- `POST /api/ai/doc-builder`
+
+If feature unavailable:
+
+```json
+{
+  "success": false,
+  "message": "This feature is not available on your current plan."
+}
+```
+
+If quota exceeded:
+
+```json
+{
+  "success": false,
+  "message": "Usage limit reached for your current plan."
+}
+```
+
+Unsafe VBA returns `422`:
+
+```json
+{
+  "success": false,
+  "message": "Generated VBA contains potentially unsafe operations and was blocked."
+}
+```
+
+## Exports
+
+Output records are stored in `output_files`. Download checks ownership and never exposes raw storage path.
+
+### `GET /api/exports`
+
+Lists current user's generated outputs.
+
+### `GET /api/exports/{output_id}/download`
+
+Downloads output if owner. User A downloading User B's output returns `404`.
+
+### `POST /api/exports/cleaned-xlsx`
+
+Creates cleaned XLSX from a source file.
+
+```json
+{
+  "fileId": "uuid",
+  "rules": [{ "column": "email", "rule": "normalize_email" }],
+  "fileName": "cleaned-data.xlsx"
+}
+```
+
+### `POST /api/exports/reconciliation-xlsx`
+
+Creates reconciliation report XLSX with `Summary` and `Details` sheets.
+
+### `POST /api/exports/docx`
+
+Creates real DOCX document.
+
+### `POST /api/exports/table-xlsx`
+
+Creates real XLSX from generated table.
+
+### `POST /api/exports/pdf`
+
+Creates basic PDF output. Requires `can_export_pdf`.
+
+## Settings
+
+### `GET /api/settings/workspace`
+
+Current user's personal workspace settings.
+
+### `PUT /api/settings/workspace`
+
+Rejects sensitive fields such as `owner_id`, `workspace_id`, `workspace_role`, `role`, `tier`, `status`.
+
+### `GET/PUT /api/settings/feature-flags`
+
+Current user's feature flag settings. Sensitive fields rejected.
+
+## Admin
+
+Admin guard requires:
+
+- `role=admin`
+- `email=admin150905@gmail.com`
+
+### `GET /api/admin/metrics`
+
+Admin-only system metrics.
+
+### `PUT /api/admin/billing/users/{user_id}/tier`
+
+Admin-only tier update. Valid tiers:
+
+- `free`
+- `pro`
+- `business`
+- `enterprise`
+
+Writes `billing_tier_audit` and `operation_logs`.
+
+### `GET /api/admin/billing/checkout-requests`
+
+Admin lists manual checkout requests.
+
+### `PUT /api/admin/billing/checkout-requests/{id}/confirm`
+
+Admin confirms manual payment, updates checkout to `confirmed`, changes tier through audit-safe admin path.
+
+### `PUT /api/admin/billing/checkout-requests/{id}/reject`
+
+Admin rejects manual checkout request.
+
+### `GET /api/admin/dashboards/billing`
+
+Revenue/billing dashboard.
+
+### `GET /api/admin/dashboards/ai-cost`
+
+AI cost/usage dashboard.
+
+### `GET /api/admin/dashboards/files`
+
+File processing dashboard.
+
+### `GET /api/admin/dashboards/security`
+
+Security/audit dashboard.
+
+Other admin APIs include users, status, prompt config, security settings, pricing config, feature flags, logs, API keys, coupons, jobs, feedbacks, templates, broadcasts.
+
+## Health
+
+- `GET /api/health`
+- `GET /api/health/ai`
+- `GET /api/health/storage`
+
+## Smoke Test
+
+```powershell
+$env:EXCELAI_ADMIN_TEST_PASSWORD="mat-khau-admin"
+python -B backend\security_runtime_tests.py
+```
