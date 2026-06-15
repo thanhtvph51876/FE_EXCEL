@@ -64,6 +64,20 @@ STORAGE_BUCKET=excel-files
 PAYMENT_MANUAL_ENABLED=true
 ```
 
+Khi deploy production, đặt `FRONTEND_URL` thành domain thật, ví dụ:
+
+```env
+ENVIRONMENT=production
+FRONTEND_URL=https://your-domain.com
+CORS_ORIGINS=https://your-domain.com
+```
+
+Email đặt lại mật khẩu sẽ dùng dạng:
+
+```text
+https://your-domain.com/reset-password?resetToken=...
+```
+
 ## Chạy Local
 
 Backend:

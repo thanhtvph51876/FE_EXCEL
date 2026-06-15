@@ -2,10 +2,10 @@
    EXCELAI BOT - FILE UTILITY, API UPLOAD, AND PARSING SERVICE
    ========================================================================== */
 
-import { API_BASE, apiFetch } from "./config.js";
+import { API_BASE, apiFetch, getAccessToken } from "./config.js";
 
 export const fileService = {
-    maxSizeLimit: 10 * 1024 * 1024, // 10MB
+    maxSizeLimit: 50 * 1024 * 1024, // 50MB
 
     validateFile(file) {
         if (!file) {
@@ -21,7 +21,7 @@ export const fileService = {
         }
         
         if (file.size > this.maxSizeLimit) {
-            return { valid: false, error: "Dung lượng file vượt quá giới hạn cho phép (Tối đa 10MB)!" };
+            return { valid: false, error: "Dung lượng file vượt quá giới hạn cho phép (Tối đa 50MB)!" };
         }
         
         if (file.size === 0) {
@@ -38,7 +38,7 @@ export const fileService = {
     async uploadFile(file) {
         const formData = new FormData();
         formData.append("file", file);
-        const token = localStorage.getItem("excelai_token");
+        const token = getAccessToken();
         const res = await fetch(`${API_BASE}/api/files/upload`, {
             method: "POST",
             headers: token ? { "Authorization": `Bearer ${token}` } : {},

@@ -1,4 +1,4 @@
-import { API_BASE, apiFetch } from "./config.js";
+import { API_BASE, apiFetch, getAccessToken } from "./config.js";
 
 export const aiService = {
     async generateChatResponse(message, threadHistory = [], systemPrompt = "", fileId = null) {
@@ -10,7 +10,7 @@ export const aiService = {
     },
 
     async streamChat(message, history = [], fileId = null, onChunk) {
-        const token = localStorage.getItem("excelai_token");
+        const token = getAccessToken();
         const res = await fetch(`${API_BASE}/api/ai/chat/stream`, {
             method: "POST",
             headers: {

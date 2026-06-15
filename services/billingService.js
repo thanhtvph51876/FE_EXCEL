@@ -37,7 +37,15 @@ export const billingService = {
     },
 
     async refreshPricing() {
-        const payload = await apiFetch("/api/billing/pricing");
+        const payload = await apiFetch("/api/billing/plans");
+        if (Array.isArray(payload.plans)) {
+            const pro = payload.plans.find(plan => plan.id === "pro");
+            if (pro) {
+                cache.pricing.monthly.pro = Number(pro.monthlyPrice || 0).toLocaleString("vi-VN") + "đ";
+                cache.pricing.annual.pro = Number(pro.yearlyPrice || 0).toLocaleString("vi-VN") + "đ";
+            }
+            return { ...cache.pricing, plans: payload.plans, providers: payload.providers || [], paymentConfigured: Boolean(payload.paymentConfigured) };
+        }
         cache.pricing = {
             monthly: { ...cache.pricing.monthly, ...(payload.monthly || {}) },
             annual: { ...cache.pricing.annual, ...(payload.annual || {}) }
@@ -97,10 +105,33 @@ export const billingService = {
         return apiFetch("/api/billing/checkout-requests");
     },
 
-    async createCheckout(tier, billingCycle, couponCode = "") {
+    async createCheckout(tier, billingCycle, couponCode = "", provider = "") {
         return apiFetch("/api/billing/checkout", {
             method: "POST",
-            body: JSON.stringify({ tier, billingCycle, couponCode })
+            body: JSON.stringify({ planId: tier, billingCycle, couponCode, provider })
+        });
+    },
+
+    async getPlans() {
+        return apiFetch("/api/billing/plans");
+    },
+
+    async getAccount() {
+        return apiFetch("/api/billing/account");
+    },
+
+    async getOrderStatus(orderId) {
+        return apiFetch(`/api/billing/orders/${encodeURIComponent(orderId)}/status`);
+    },
+
+    async getBillingHistory() {
+        return apiFetch("/api/billing/history");
+    },
+
+    async createEnterpriseLead(payload) {
+        return apiFetch("/api/billing/enterprise-leads", {
+            method: "POST",
+            body: JSON.stringify(payload)
         });
     },
 

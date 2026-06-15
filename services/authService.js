@@ -27,6 +27,36 @@ export const authService = {
         return data;
     },
 
+    async getGoogleConfig() {
+        return apiFetch("/api/auth/google/config", { skipAuthRefresh: true });
+    },
+
+    async loginWithGoogle(credential) {
+        const data = await apiFetch("/api/auth/google", {
+            method: "POST",
+            skipAuthRefresh: true,
+            body: JSON.stringify({ credential })
+        });
+        setAuthTokens(data);
+        return data;
+    },
+
+    async forgotPassword(email) {
+        return apiFetch("/api/auth/forgot-password", {
+            method: "POST",
+            skipAuthRefresh: true,
+            body: JSON.stringify({ email })
+        });
+    },
+
+    async resetPassword(token, password) {
+        return apiFetch("/api/auth/reset-password", {
+            method: "POST",
+            skipAuthRefresh: true,
+            body: JSON.stringify({ token, password })
+        });
+    },
+
     async logout() {
         try {
             await apiFetch("/api/auth/logout", { method: "POST" });

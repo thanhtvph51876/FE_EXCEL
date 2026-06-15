@@ -1,8 +1,8 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    EXCELAI BOT - SYSTEM MANAGEMENT AND ADMIN SERVICE
    ========================================================================== */
 
-import { API_BASE, apiFetch } from "./config.js";
+import { API_BASE, apiFetch, getAccessToken } from "./config.js";
 
 const defaultPromptConfig = {
     systemPrompt: "Bạn là trợ lý ExcelAI Bot chuyên nghiệp của hệ thống ExcelAI. Nhiệm vụ của bạn là giải đáp thắc mắc của người dùng về Excel, Google Sheets, VBA một cách ngắn gọn, súc tích và có ví dụ đi kèm rõ ràng.",
@@ -105,12 +105,12 @@ const cache = {
     templates: []
 };
 
-async function safeRequest(task, fallback = null) {
+async function safeRequest(task, defaultValue = null) {
     try {
         return await task();
     } catch (error) {
         console.warn(error.message || error);
-        return fallback;
+        return defaultValue;
     }
 }
 
@@ -126,14 +126,121 @@ function normalizeLog(log) {
     };
 }
 
+function normalizeWorkspace(row = {}) {
+    const storageUsedBytes = Number(row.storageUsedBytes ?? row.storage_used_bytes ?? 0);
+    const storageLimitBytes = Number(row.storageLimitBytes ?? row.storage_limit_bytes ?? 0);
+    const fileLimit = Number(row.fileLimit ?? row.file_limit ?? 0);
+    const filesCount = Number(row.filesCount ?? row.fileCount ?? row.files_count ?? row.file_count ?? 0);
+    const plan = String(row.plan || row.tier || row.planId || "free").toLowerCase();
+    return {
+        ...row,
+        id: row.id || row.userId || row.workspaceId,
+        userId: row.userId || row.id || row.workspaceId,
+        name: row.name || row.workspaceName || "Workspace",
+        ownerName: row.ownerName || row.owner_name || "",
+        ownerEmail: row.ownerEmail || row.owner_email || "",
+        plan,
+        tier: plan,
+        membersCount: Number(row.membersCount ?? row.memberCount ?? row.members_count ?? row.member_count ?? 1),
+        memberCount: Number(row.membersCount ?? row.memberCount ?? row.members_count ?? row.member_count ?? 1),
+        filesCount,
+        fileCount: filesCount,
+        fileLimit,
+        storageUsedBytes,
+        storageLimitBytes,
+        storageUsed: row.storageUsed || bytesLabel(storageUsedBytes),
+        storageLimit: row.storageLimit || bytesLabel(storageLimitBytes),
+        storageUsagePercent: Number(row.storageUsagePercent ?? row.storage_usage_percent ?? (storageLimitBytes ? (storageUsedBytes / storageLimitBytes) * 100 : 0)),
+        retentionPolicy: row.retentionPolicy || row.retention || "Theo cấu hình backend",
+        retention: row.retention || row.retentionPolicy || "Theo cấu hình backend",
+        lastActivityAt: row.lastActivityAt || row.last_activity_at || row.updatedAt || row.updated_at || row.createdAt || row.created_at || "",
+        status: String(row.status || "active").toLowerCase(),
+        createdAt: row.createdAt || row.created_at || "",
+        updatedAt: row.updatedAt || row.updated_at || row.lastActivityAt || row.last_activity_at || ""
+    };
+}
+
+function bytesLabel(value = 0) {
+    const bytes = Number(value || 0);
+    if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+    if (bytes >= 1024 ** 2) return `${(bytes / 1024 ** 2).toFixed(2)} MB`;
+    if (bytes >= 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    return `${bytes} B`;
+}
+
 export const adminService = {
     async getMetrics() {
         return apiFetch("/api/admin/metrics");
     },
 
+    normalizeUser(row = {}) {
+        const name = row.name || row.displayName || row.fullName || row.email || "Người dùng";
+        const plan = String(row.plan || row.tier || "free").toLowerCase();
+        const rawStatus = String(row.status || (row.isLocked ? "suspended" : row.isActive === false ? "inactive" : "active")).toLowerCase();
+        const isLocked = Boolean(row.isLocked) || ["suspended", "locked", "banned", "deleted"].includes(rawStatus);
+        return {
+            ...row,
+            id: row.id || row.userId || row.uuid,
+            name,
+            email: row.email || "",
+            avatarUrl: row.avatarUrl || row.avatar_url || "",
+            plan,
+            tier: plan,
+            role: row.role || (String(row.email || "").toLowerCase().includes("admin") ? "admin" : "user"),
+            usage: Number(row.usage ?? row.monthlyUsage ?? row.monthly_usage ?? row.usageCount ?? row.usage_count ?? 0),
+            tokenUsage: Number(row.tokenUsage ?? row.token_usage ?? 0),
+            status: isLocked ? "suspended" : rawStatus,
+            isLocked,
+            lastLoginAt: row.lastLoginAt || row.last_login_at || row.lastActivityAt || row.last_activity_at || row.updatedAt || row.updated_at || row.createdAt || row.created_at || "",
+            createdAt: row.createdAt || row.created_at || "",
+            workspaceName: row.workspaceName || row.workspace || row.workspace_name || ""
+        };
+    },
+
     async getUsers(page = 1, pageSize = 100, query = "") {
-        const suffix = query ? `&q=${encodeURIComponent(query)}` : "";
-        return apiFetch(`/api/admin/users?page=${page}&pageSize=${pageSize}${suffix}`);
+        const params = typeof page === "object" ? { ...page } : { page, pageSize, q: query };
+        const searchParams = new URLSearchParams();
+        searchParams.set("page", String(params.page || 1));
+        searchParams.set("pageSize", String(params.pageSize || 100));
+        if (params.q || params.search) searchParams.set("q", params.q || params.search);
+        const payload = await apiFetch(`/api/admin/users?${searchParams.toString()}`);
+        const users = Array.isArray(payload?.users) ? payload.users.map(user => this.normalizeUser(user)) : [];
+        return { ...payload, users };
+    },
+
+    async getUserStats() {
+        const [usersPayload, metricsPayload] = await Promise.all([
+            this.getUsers({ page: 1, pageSize: 500 }),
+            safeRequest(() => this.getMetrics(), {})
+        ]);
+        const users = usersPayload.users || [];
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const previousSevenDays = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+        const createdThisWeek = users.filter(user => {
+            const date = new Date(user.createdAt || 0);
+            return !Number.isNaN(date.getTime()) && date >= sevenDaysAgo;
+        }).length;
+        const createdPreviousWeek = users.filter(user => {
+            const date = new Date(user.createdAt || 0);
+            return !Number.isNaN(date.getTime()) && date >= previousSevenDays && date < sevenDaysAgo;
+        }).length;
+        return {
+            totalUsers: usersPayload.total ?? users.length,
+            activeUsers: users.filter(user => user.status === "active").length,
+            lockedUsers: users.filter(user => user.isLocked).length,
+            totalUsageThisMonth: users.reduce((sum, user) => sum + Number(user.usage || 0), 0),
+            usersByPlan: users.reduce((acc, user) => {
+                const plan = user.plan || "free";
+                acc[plan] = (acc[plan] || 0) + 1;
+                return acc;
+            }, {}),
+            createdThisWeek,
+            createdPreviousWeek,
+            totalGrowthPercent: createdPreviousWeek ? Math.round(((createdThisWeek - createdPreviousWeek) / createdPreviousWeek) * 100) : null,
+            metrics: metricsPayload,
+            users
+        };
     },
 
     async createUser(profile = {}) {
@@ -179,10 +286,68 @@ export const adminService = {
         });
     },
 
+    async lockUser(id) {
+        return this.updateUserStatus(id, "suspended");
+    },
+
+    async unlockUser(id) {
+        return this.updateUserStatus(id, "active");
+    },
+
     async resetUserPassword(id, password, reason = "admin_password_reset") {
         return apiFetch(`/api/admin/users/${encodeURIComponent(id)}/password`, {
             method: "PUT",
             body: JSON.stringify({ password, reason })
+        });
+    },
+
+    async importUsersCsv(file) {
+        const text = await file.text();
+        const lines = text.split(/\r?\n/).filter(Boolean);
+        const [headerLine, ...rows] = lines;
+        const headers = (headerLine || "").split(",").map(item => item.trim().toLowerCase());
+        const created = [];
+        const errors = [];
+        for (const [index, row] of rows.entries()) {
+            const values = row.split(",").map(item => item.trim());
+            const record = Object.fromEntries(headers.map((header, i) => [header, values[i] || ""]));
+            const email = record.email || record["e-mail"];
+            const name = record.name || record.fullname || record["họ tên"] || email;
+            if (!email || !email.includes("@")) {
+                errors.push({ row: index + 2, message: "Email không hợp lệ" });
+                continue;
+            }
+            try {
+                const payload = await this.createUser({
+                    name,
+                    email,
+                    password: crypto.randomUUID().replace(/-/g, "").slice(0, 12),
+                    tier: record.plan || record.tier || "free",
+                    status: record.status || "active",
+                    reason: "admin_csv_import"
+                });
+                if (payload?.user) created.push(this.normalizeUser(payload.user));
+            } catch (error) {
+                errors.push({ row: index + 2, message: error.message || "Không thể import user" });
+            }
+        }
+        return { success: errors.length === 0, created, errors, total: rows.length };
+    },
+
+    async createWorkspaceGroup(payload = {}) {
+        return apiFetch("/api/workspaces", {
+            method: "POST",
+            body: JSON.stringify({ name: payload.name })
+        });
+    },
+
+    async addWorkspaceGroupMember(workspaceId, payload = {}) {
+        return apiFetch(`/api/workspaces/${encodeURIComponent(workspaceId)}/members`, {
+            method: "POST",
+            body: JSON.stringify({
+                email: payload.email,
+                role: payload.role || "viewer"
+            })
         });
     },
 
@@ -194,9 +359,93 @@ export const adminService = {
         return apiFetch(`/api/admin/users/${encodeURIComponent(id)}/audit`);
     },
 
-    async getWorkspaces() {
+    normalizeWorkspace,
+
+    async getWorkspaces(params = {}) {
+        const searchParams = new URLSearchParams();
+        Object.entries(params || {}).forEach(([key, value]) => {
+            if (value !== undefined && value !== null && value !== "" && value !== "all") searchParams.set(key, String(value));
+        });
+        const suffix = searchParams.toString() ? `?${searchParams.toString()}` : "";
+        const payload = await apiFetch(`/api/admin/workspaces${suffix}`);
+        const rows = Array.isArray(payload?.items) ? payload.items : (Array.isArray(payload?.workspaces) ? payload.workspaces : []);
+        cache.workspaces = rows.map(normalizeWorkspace);
+        return { ...payload, items: cache.workspaces, workspaces: cache.workspaces };
+    },
+
+    async getWorkspaceStats() {
+        return apiFetch("/api/admin/workspaces/stats");
+    },
+
+    async createWorkspace(payload = {}) {
+        const result = await apiFetch("/api/admin/workspaces", {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+        if (result?.workspace) cache.workspaces.unshift(normalizeWorkspace(result.workspace));
+        return result;
+    },
+
+    async updateWorkspace(id, payload = {}) {
+        const result = await apiFetch(`/api/admin/workspaces/${encodeURIComponent(id)}`, {
+            method: "PATCH",
+            body: JSON.stringify(payload)
+        });
+        if (result?.workspace) {
+            const normalized = normalizeWorkspace(result.workspace);
+            const index = cache.workspaces.findIndex(item => String(item.id) === String(id) || String(item.userId) === String(id));
+            if (index >= 0) cache.workspaces[index] = normalized;
+        }
+        return result;
+    },
+
+    async deleteWorkspace(id) {
+        const result = await apiFetch(`/api/admin/workspaces/${encodeURIComponent(id)}`, { method: "DELETE" });
+        cache.workspaces = cache.workspaces.filter(item => String(item.id) !== String(id) && String(item.userId) !== String(id));
+        return result;
+    },
+
+    exportWorkspace(id) {
+        return fetch(`${API_BASE}/api/admin/workspaces/${encodeURIComponent(id)}/export`, {
+            headers: { "Authorization": `Bearer ${getAccessToken() || ""}` }
+        }).then(async (res) => {
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.message || err.detail || "Không thể export workspace");
+            }
+            return res.blob();
+        });
+    },
+
+    async importWorkspaceData(file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch(`${API_BASE}/api/admin/workspaces/import`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${getAccessToken() || ""}` },
+            body: formData
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || err.detail || "Không thể import workspace");
+        }
+        return res.json();
+    },
+
+    async getWorkspaceActivities(limit = 20) {
+        return apiFetch(`/api/admin/workspaces/activity?limit=${encodeURIComponent(limit)}`);
+    },
+
+    async updateWorkspaceQuota(id, payload = {}) {
+        return apiFetch(`/api/admin/workspaces/${encodeURIComponent(id)}/quota`, {
+            method: "PATCH",
+            body: JSON.stringify(payload)
+        });
+    },
+
+    async getLegacyWorkspaces() {
         const payload = await apiFetch("/api/admin/workspaces");
-        cache.workspaces = Array.isArray(payload?.workspaces) ? payload.workspaces : [];
+        cache.workspaces = Array.isArray(payload?.workspaces) ? payload.workspaces.map(normalizeWorkspace) : [];
         return payload;
     },
 
@@ -435,6 +684,36 @@ export const adminService = {
         if (filters.dateTo) params.set("dateTo", filters.dateTo);
         const suffix = params.toString() ? `?${params.toString()}` : "";
         return apiFetch(`/api/admin/dashboards/system-report${suffix}`);
+    },
+
+    async getAdminOverview(filters = {}) {
+        const aiFilters = filters.ai || { timeRange: filters.timeRange || "7d" };
+        const reportFilters = filters.report || { timeRange: filters.timeRange || "7d" };
+        const requests = {
+            health: safeRequest(() => apiFetch("/api/health")),
+            metrics: safeRequest(() => this.getMetrics()),
+            users: safeRequest(() => this.getUsers(1, 100)),
+            workspaces: safeRequest(() => this.getWorkspaces()),
+            jobs: safeRequest(() => apiFetch("/api/admin/jobs")),
+            logs: safeRequest(() => apiFetch("/api/admin/logs")),
+            billing: safeRequest(() => this.getBillingDashboard()),
+            billingAdvanced: safeRequest(() => this.getBillingAdvancedDashboard()),
+            aiCost: safeRequest(() => this.getAiCostDashboard(aiFilters)),
+            security: safeRequest(() => this.getSecurityAuditDashboard()),
+            systemReport: safeRequest(() => this.getSystemReportDashboard(reportFilters))
+        };
+        const entries = await Promise.all(
+            Object.entries(requests).map(async ([key, promise]) => [key, await promise])
+        );
+        const overview = Object.fromEntries(entries);
+
+        if (overview.users?.users) cache.users = overview.users.users;
+        if (overview.workspaces?.workspaces) cache.workspaces = overview.workspaces.workspaces;
+        if (overview.jobs?.jobs) cache.jobs = overview.jobs.jobs;
+        if (overview.logs?.logs) cache.systemLogs = overview.logs.logs.map(normalizeLog);
+        if (overview.billing) cache.billingDashboard = overview.billing;
+
+        return overview;
     },
 
     async confirmCheckoutRequest(id, adminNote = "") {

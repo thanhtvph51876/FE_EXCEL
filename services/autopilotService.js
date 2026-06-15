@@ -1,40 +1,63 @@
-import { apiFetch } from "./config.js";
+import { API_BASE, apiFetch } from "./config.js";
 
-function withPreview(plan) {
-    const normalized = {
-        understanding: plan.understanding || "Đã phân tích yêu cầu tự động hóa.",
+function normalizePlan(response) {
+    const plan = response?.plan || response || {};
+    return {
+        ...plan,
+        understanding: plan.expectedOutput?.description || "Đã đọc file thật và lập kế hoạch xử lý.",
         steps: Array.isArray(plan.steps) ? plan.steps : [],
-        requiredInputs: Array.isArray(plan.requiredInputs) ? plan.requiredInputs : [],
-        expectedOutputs: Array.isArray(plan.expectedOutputs) ? plan.expectedOutputs : [],
-        previewType: plan.previewType || "excel",
-        previewData: plan.previewData || null
+        requiredInputs: plan.fileName ? [plan.fileName] : [],
+        expectedOutputs: [plan.expectedOutput?.description || "File Excel kết quả"],
+        fileProfile: plan.fileProfile || {}
     };
+}
 
-    if (!normalized.previewData && normalized.previewType === "document") {
-        normalized.previewData = {
-            title: normalized.expectedOutputs[0] || "BẢN NHÁP AUTOPILOT",
-            content: normalized.steps.map(step => `${step.num}. ${step.title}\n${step.desc}`).join("\n\n")
-        };
-    }
-
-    if (!normalized.previewData) {
-        normalized.previewType = "excel";
-        normalized.previewData = {
-            headers: ["Bước", "Hạng mục", "Mô tả", "Trạng thái"],
-            rows: normalized.steps.map(step => [String(step.num), step.title, step.desc, step.status])
-        };
-    }
-
-    return normalized;
+function normalizeDraft(response) {
+    return response?.draft || response || null;
 }
 
 export const autopilotService = {
-    async generatePlan(goal, outputs = [], files = []) {
-        const plan = await apiFetch("/api/ai/autopilot", {
+    async createPlan(goal, fileId) {
+        const response = await apiFetch("/api/autopilot/plan", {
             method: "POST",
-            body: JSON.stringify({ goal, outputs, files })
+            body: JSON.stringify({ goal, fileId })
         });
-        return withPreview(plan);
+        return normalizePlan(response);
+    },
+
+    async updatePlan(planId, payload = {}) {
+        const response = await apiFetch(`/api/autopilot/plan/${encodeURIComponent(planId)}`, {
+            method: "PATCH",
+            body: JSON.stringify(payload)
+        });
+        return normalizePlan(response);
+    },
+
+    async createDraft(planId) {
+        const response = await apiFetch("/api/autopilot/draft", {
+            method: "POST",
+            body: JSON.stringify({ planId })
+        });
+        return normalizeDraft(response);
+    },
+
+    async history() {
+        const response = await apiFetch("/api/autopilot/history");
+        return response?.items || [];
+    },
+
+    async historyDetail(planId) {
+        return apiFetch(`/api/autopilot/history/${encodeURIComponent(planId)}`);
+    },
+
+    outputDownloadUrl(outputId) {
+        return `${API_BASE}/api/autopilot/output/${encodeURIComponent(outputId)}/download`;
+    },
+
+    async generatePlan(goal, outputs = [], files = []) {
+        const fileId = files.find(Boolean);
+        if (!fileId) throw new Error("Vui lòng chọn file dữ liệu thật trước khi lập kế hoạch.");
+        return this.createPlan(goal, fileId);
     }
 };
 

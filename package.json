@@ -1,0 +1,10 @@
+{
+  "name": "excelai-static-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node --check app.js && node --check services/adminService.js",
+    "serve": "python -m http.server 5500"
+  }
+}
