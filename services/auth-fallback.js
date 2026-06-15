@@ -76,7 +76,10 @@ window.addEventListener("DOMContentLoaded", () => {
             const body = mode === "register" ? { name, email, password } : { email, password };
             submitBtn.disabled = true;
             try {
-                const apiBase = window.EXCELAI_API_BASE || "http://127.0.0.1:8002";
+                const configuredApiBase = String(window.EXCELAI_API_BASE || "").trim();
+                const apiBase = configuredApiBase && !configuredApiBase.includes("your-render-backend")
+                    ? configuredApiBase.replace(/\/$/, "")
+                    : "http://127.0.0.1:8002";
                 const apiBases = apiBase.includes("127.0.0.1")
                     ? [apiBase, apiBase.replace("127.0.0.1", "localhost")]
                     : [apiBase, apiBase.replace("localhost", "127.0.0.1")];

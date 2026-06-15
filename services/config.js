@@ -1,4 +1,8 @@
-export const API_BASE = window.EXCELAI_API_BASE || "http://127.0.0.1:8002";
+const LOCAL_API_BASE = "http://127.0.0.1:8002";
+const configuredApiBase = String(window.EXCELAI_API_BASE || "").trim();
+export const API_BASE = configuredApiBase && !configuredApiBase.includes("your-render-backend")
+    ? configuredApiBase.replace(/\/$/, "")
+    : LOCAL_API_BASE;
 let resolvedApiBase = "";
 
 const ACCESS_TOKEN_KEY = "excelai_token";
@@ -78,8 +82,9 @@ function emitAuthExpired() {
 }
 
 function backendCandidates() {
-    const configured = window.EXCELAI_API_BASE || API_BASE;
-    const candidates = [configured];
+    const configured = API_BASE;
+    const normalized = String(configured || "").trim().replace(/\/$/, "");
+    const candidates = [normalized || LOCAL_API_BASE];
     if (configured.includes("127.0.0.1")) candidates.push(configured.replace("127.0.0.1", "localhost"));
     if (configured.includes("localhost")) candidates.push(configured.replace("localhost", "127.0.0.1"));
     return [...new Set(candidates)];
