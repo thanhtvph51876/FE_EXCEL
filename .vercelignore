@@ -1,0 +1,11 @@
+backend/
+storage/
+*.log
+*.bak*
+__pycache__/
+*.pyc
+.git/
+.env
+backend/.env
+backend/.venv/
+backend/storage/
