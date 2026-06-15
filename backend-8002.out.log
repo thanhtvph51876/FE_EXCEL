@@ -3514,3 +3514,4 @@ request_id=110e7718-924f-4b43-9350-08419bc902d4 method=GET path=/api/system/broa
 INFO:     127.0.0.1:60583 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
 request_id=4b6c4137-7119-4400-81ee-ff518de27254 method=GET path=/api/system/broadcasts/active status=200 latency_ms=4
 INFO:     127.0.0.1:55220 - "GET /api/system/broadcasts/active HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58945 - "OPTIONS /api/system/broadcasts/active HTTP/1.1" 200 OK
