@@ -1,3 +1,4 @@
+﻿import csv
 import hashlib
 import io
 import json
@@ -12,11 +13,12 @@ from uuid import uuid4
 import bcrypt
 import openpyxl
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile, status
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 
 from auth_policy import USER_STATUSES, can_manage_billing, is_admin_email, normalize_email, normalize_status
 from dependencies import get_db, require_admin, tier_limit, user_to_response, validate_tier
 from entitlements import ENTITLEMENTS
+from services.http_headers import safe_attachment_headers
 from models.schemas import (
     ApiKeyCreateRequest,
     ApiKeyStatusRequest,
@@ -189,7 +191,7 @@ AI_USAGE_FEATURES = (
 )
 
 PROMPT_VARIABLES = (
-    ("{{user_name}}", "Tên người dùng đang đăng nhập", "string", "Nguyễn Văn A", True),
+    ("{{user_name}}", "Tên người dùng đang đăng nhập", "string", "Người dùng hiện tại", True),
     ("{{workspace_name}}", "Tên workspace hiện tại", "string", "Finance Ops", False),
     ("{{user_plan}}", "Gói dịch vụ của người dùng", "string", "pro", False),
     ("{{language}}", "Ngôn ngữ đầu ra mong muốn", "string", "vi", False),
@@ -206,7 +208,7 @@ DEFAULT_AI_ROUTING_SETTINGS = {
     "proChatLimitPerDay": 300,
     "enterpriseChatLimitPerDay": 99999,
     "defaultModel": "gemini-1.5-flash",
-    "fallbackModel": "gemini-1.5-flash",
+    "backupModel": "gemini-1.5-flash",
     "temperature": 0.4,
     "maxTokens": 4096,
     "topP": 0.95,
@@ -498,9 +500,12 @@ def _broadcast_payload(row: dict) -> dict:
     }
 
 
-def _template_payload(row: dict) -> dict:
+def _template_payload(row: dict, metadata: dict | None = None) -> dict:
+    metadata = metadata or {}
+    template_id = row.get("id")
+    preview_path = metadata.get("previewPath") or ""
     return {
-        "id": row.get("id"),
+        "id": template_id,
         "name": row.get("name") or "",
         "category": row.get("category") or "",
         "description": row.get("description") or "",
@@ -508,6 +513,8 @@ def _template_payload(row: dict) -> dict:
         "icon": row.get("icon") or "XL",
         "color": row.get("color") or "accent",
         "createdAt": row.get("created_at"),
+        "image": f"/api/templates/{template_id}/preview-image" if preview_path else "",
+        "previewImage": f"/api/templates/{template_id}/preview-image" if preview_path else "",
     }
 
 
@@ -593,6 +600,8 @@ def _template_advanced_payload(row: dict, metadata: dict | None = None, permissi
         "fileSize": int(metadata.get("fileSize") or 0),
         "fileSizeLabel": metadata.get("fileSizeLabel") or format_file_size(int(metadata.get("fileSize") or 0)),
         "storagePath": metadata.get("storagePath") or "",
+        "image": f"/api/templates/{template_id}/preview-image" if metadata.get("previewPath") else "",
+        "previewImage": f"/api/templates/{template_id}/preview-image" if metadata.get("previewPath") else "",
         "icon": row.get("icon") or metadata.get("icon") or "XL",
         "tags": metadata.get("tags") or [],
         "version": metadata.get("version") or "1.0.0",
@@ -682,8 +691,15 @@ def _workspace_payload(user: dict, files_count: int, workspace_settings: dict | 
     file_limit = int(entitlement.get("max_files") or 0)
     max_file_mb = int(entitlement.get("max_file_size_mb") or 0)
     storage_limit_bytes = max(0, file_limit * max_file_mb * 1024 * 1024)
+    custom_file_limit = int(workspace_settings.get("customFileLimit") or 0)
+    custom_storage_limit = int(workspace_settings.get("customStorageLimitBytes") or 0)
+    if custom_file_limit > 0:
+        file_limit = custom_file_limit
+    if custom_storage_limit > 0:
+        storage_limit_bytes = custom_storage_limit
     storage_percent = round((storage_bytes / max(1, storage_limit_bytes)) * 100, 2) if storage_limit_bytes else 0
     return {
+        "id": user.get("id"),
         "userId": user.get("id"),
         "name": workspace_name,
         "ownerName": user.get("name") or "",
@@ -707,7 +723,119 @@ def _workspace_payload(user: dict, files_count: int, workspace_settings: dict | 
         "notes": workspace_settings.get("notes") or "",
         "status": normalize_status(user.get("status")),
         "createdAt": user.get("created_at"),
+        "updatedAt": workspace_settings.get("updatedAt") or last_activity_at or user.get("created_at"),
         "lastActivityAt": last_activity_at or user.get("created_at"),
+    }
+
+
+def _workspace_dataset(db, limit: int | None = None, offset: int = 0) -> list[dict]:
+    if limit is None:
+        users_rows = db.table("users").select("*").order("created_at", desc=True).execute().data or []
+    else:
+        users_rows = db.fetch(
+            """
+            SELECT *
+            FROM users
+            ORDER BY created_at DESC
+            LIMIT %s OFFSET %s
+            """,
+            [limit, offset],
+        )
+    user_ids = [str(row.get("id")) for row in users_rows if row.get("id")]
+    if user_ids:
+        files_rows = db.fetch(
+            """
+            SELECT user_id, size, status, uploaded_at
+            FROM files
+            WHERE user_id = ANY(%s::uuid[])
+            """,
+            [user_ids],
+        )
+        settings_rows = db.fetch(
+            """
+            SELECT *
+            FROM user_settings
+            WHERE key = 'workspace' AND user_id = ANY(%s::uuid[])
+            """,
+            [user_ids],
+        )
+        member_rows = db.fetch(
+            """
+            SELECT w.owner_user_id, COUNT(DISTINCT wm.user_id) AS member_count
+            FROM workspaces w
+            LEFT JOIN workspace_members wm ON wm.workspace_id = w.id AND wm.status = 'active'
+            WHERE w.owner_user_id = ANY(%s::uuid[])
+            GROUP BY w.owner_user_id
+            """,
+            [user_ids],
+        )
+        log_rows = db.fetch(
+            """
+            SELECT user_id, created_at
+            FROM operation_logs
+            WHERE user_id = ANY(%s::uuid[])
+            ORDER BY created_at DESC
+            LIMIT 1000
+            """,
+            [user_ids],
+        )
+    else:
+        files_rows = []
+        settings_rows = []
+        member_rows = []
+        log_rows = []
+    file_counts: dict[str, int] = {}
+    storage_by_user: dict[str, int] = {}
+    failed_files: dict[str, int] = {}
+    last_activity: dict[str, str] = {}
+    for file_row in files_rows:
+        user_id = str(file_row.get("user_id"))
+        file_counts[user_id] = file_counts.get(user_id, 0) + 1
+        storage_by_user[user_id] = storage_by_user.get(user_id, 0) + _parse_size_to_bytes(file_row.get("size"))
+        if file_row.get("status") in {"failed", "error", "Lỗi"}:
+            failed_files[user_id] = failed_files.get(user_id, 0) + 1
+        uploaded_at = _iso_text(file_row.get("uploaded_at"))
+        if uploaded_at and uploaded_at > last_activity.get(user_id, ""):
+            last_activity[user_id] = uploaded_at
+    for log_row in log_rows:
+        user_id = str(log_row.get("user_id") or "")
+        created_at = _iso_text(log_row.get("created_at"))
+        if user_id and created_at and created_at > last_activity.get(user_id, ""):
+            last_activity[user_id] = created_at
+    workspace_settings = {
+        str(row.get("user_id")): _json_default(row.get("value"), {})
+        for row in settings_rows
+    }
+    member_counts = {
+        str(row.get("owner_user_id")): int(row.get("member_count") or 0)
+        for row in member_rows
+    }
+    return [
+        _workspace_payload(
+            row,
+            file_counts.get(str(row.get("id")), 0),
+            workspace_settings.get(str(row.get("id"))),
+            storage_by_user.get(str(row.get("id")), 0),
+            max(1, member_counts.get(str(row.get("id")), 1)),
+            last_activity.get(str(row.get("id"))),
+            failed_files.get(str(row.get("id")), 0),
+        )
+        for row in users_rows
+    ]
+
+
+def _workspace_stats(workspace_rows: list[dict]) -> dict:
+    storage_total = sum(row.get("storageUsedBytes") or 0 for row in workspace_rows)
+    return {
+        "totalWorkspaces": len(workspace_rows),
+        "activeWorkspaces": sum(1 for row in workspace_rows if row.get("status") == "active"),
+        "lockedWorkspaces": sum(1 for row in workspace_rows if row.get("status") in {"suspended", "deleted", "inactive"}),
+        "totalFiles": sum(row.get("fileCount") or 0 for row in workspace_rows),
+        "totalStorageUsedBytes": storage_total,
+        "totalStorageUsed": _bytes_label(storage_total),
+        "overLimitWorkspaces": sum(1 for row in workspace_rows if row.get("overLimit")),
+        "failedFiles": sum(row.get("failedFileCount") or 0 for row in workspace_rows),
+        "totalMembers": sum(row.get("memberCount") or 0 for row in workspace_rows),
     }
 
 
@@ -1021,71 +1149,238 @@ async def create_user(payload: AdminUserCreateRequest, admin_user: dict = Depend
 
 
 @router.get("/workspaces")
-async def workspaces(_: dict = Depends(require_admin), db = Depends(get_db)):
-    users_rows = db.table("users").select("*").order("created_at", desc=True).execute().data or []
-    files_rows = db.table("files").select("user_id,size,status,uploaded_at").execute().data or []
-    settings_rows = db.table("user_settings").select("*").eq("key", "workspace").execute().data or []
-    member_rows = db.fetch(
+async def workspaces(
+    _: dict = Depends(require_admin),
+    db = Depends(get_db),
+    page: int = Query(default=1, ge=1),
+    pageSize: int = Query(default=50, ge=1, le=500),
+    q: str | None = Query(default=None, max_length=120),
+    plan: str | None = Query(default=None, max_length=40),
+    status_filter: str | None = Query(default=None, alias="status", max_length=40),
+    storage: str | None = Query(default=None, max_length=40),
+):
+    query_text = (q or "").strip().lower()
+    plan_filter = (plan or "all").strip().lower()
+    status_value = (status_filter or "all").strip().lower()
+    storage_filter = (storage or "all").strip().lower()
+    can_page_in_db = not query_text and plan_filter == "all" and status_value == "all" and storage_filter == "all"
+    if can_page_in_db:
+        total_rows = db.fetch("SELECT COUNT(*) AS count FROM users")
+        total = int((total_rows[0] if total_rows else {}).get("count") or 0)
+        start = (page - 1) * pageSize
+        page_rows = _workspace_dataset(db, limit=pageSize, offset=start)
+        return {"items": page_rows, "workspaces": page_rows, "total": total, "page": page, "pageSize": pageSize, "stats": _workspace_stats(page_rows)}
+
+    workspace_rows = _workspace_dataset(db)
+    if query_text:
+        workspace_rows = [
+            row for row in workspace_rows
+            if query_text in str(row.get("name") or "").lower()
+            or query_text in str(row.get("ownerName") or "").lower()
+            or query_text in str(row.get("ownerEmail") or "").lower()
+            or query_text in str(row.get("id") or "").lower()
+        ]
+    if plan_filter != "all":
+        workspace_rows = [row for row in workspace_rows if str(row.get("plan") or "").lower() == plan_filter]
+    if status_value != "all":
+        workspace_rows = [row for row in workspace_rows if str(row.get("status") or "").lower() == status_value]
+    if storage_filter == "near-full":
+        workspace_rows = [row for row in workspace_rows if 80 <= float(row.get("storageUsagePercent") or 0) < 100]
+    elif storage_filter == "over-limit":
+        workspace_rows = [row for row in workspace_rows if row.get("overLimit") or float(row.get("storageUsagePercent") or 0) >= 100]
+
+    total = len(workspace_rows)
+    start = (page - 1) * pageSize
+    page_rows = workspace_rows[start:start + pageSize]
+    return {"items": page_rows, "workspaces": page_rows, "total": total, "page": page, "pageSize": pageSize, "stats": _workspace_stats(workspace_rows)}
+
+
+@router.get("/workspaces/stats")
+async def workspace_stats(_: dict = Depends(require_admin), db = Depends(get_db)):
+    return {"success": True, **_workspace_stats(_workspace_dataset(db))}
+
+
+@router.get("/workspaces/activity")
+async def workspace_activity(_: dict = Depends(require_admin), db = Depends(get_db), limit: int = Query(default=20, ge=1, le=100)):
+    rows = db.fetch(
         """
-        SELECT w.owner_user_id, COUNT(DISTINCT wm.user_id) AS member_count
-        FROM workspaces w
-        LEFT JOIN workspace_members wm ON wm.workspace_id = w.id AND wm.status = 'active'
-        GROUP BY w.owner_user_id
-        """
+        SELECT l.id, l.user_id, l.type, l.action, l.created_at, u.name, u.email
+        FROM operation_logs l
+        LEFT JOIN users u ON u.id = l.user_id
+        WHERE l.type IN ('workspace', 'file', 'export', 'billing', 'admin', 'file_audit')
+        ORDER BY l.created_at DESC
+        LIMIT %s
+        """,
+        [limit],
     )
-    log_rows = db.table("operation_logs").select("user_id,created_at").order("created_at", desc=True).limit(1000).execute().data or []
-    file_counts: dict[str, int] = {}
-    storage_by_user: dict[str, int] = {}
-    failed_files: dict[str, int] = {}
-    last_activity: dict[str, str] = {}
-    for file_row in files_rows:
-        user_id = str(file_row.get("user_id"))
-        file_counts[user_id] = file_counts.get(user_id, 0) + 1
-        storage_by_user[user_id] = storage_by_user.get(user_id, 0) + _parse_size_to_bytes(file_row.get("size"))
-        if file_row.get("status") in {"failed", "error", "Lỗi"}:
-            failed_files[user_id] = failed_files.get(user_id, 0) + 1
-        uploaded_at = _iso_text(file_row.get("uploaded_at"))
-        if uploaded_at and uploaded_at > last_activity.get(user_id, ""):
-            last_activity[user_id] = uploaded_at
-    for log_row in log_rows:
-        user_id = str(log_row.get("user_id") or "")
-        created_at = _iso_text(log_row.get("created_at"))
-        if user_id and created_at and created_at > last_activity.get(user_id, ""):
-            last_activity[user_id] = created_at
-    workspace_settings = {
-        str(row.get("user_id")): _json_default(row.get("value"), {})
-        for row in settings_rows
-    }
-    member_counts = {
-        str(row.get("owner_user_id")): int(row.get("member_count") or 0)
-        for row in member_rows
-    }
-    workspace_rows = [
-        _workspace_payload(
-            row,
-            file_counts.get(str(row.get("id")), 0),
-            workspace_settings.get(str(row.get("id"))),
-            storage_by_user.get(str(row.get("id")), 0),
-            max(1, member_counts.get(str(row.get("id")), 1)),
-            last_activity.get(str(row.get("id"))),
-            failed_files.get(str(row.get("id")), 0),
-        )
-        for row in users_rows
-    ]
     return {
-        "workspaces": workspace_rows,
-        "stats": {
-            "totalWorkspaces": len(workspace_rows),
-            "activeWorkspaces": sum(1 for row in workspace_rows if row.get("status") == "active"),
-            "lockedWorkspaces": sum(1 for row in workspace_rows if row.get("status") in {"suspended", "deleted", "inactive"}),
-            "totalFiles": sum(row.get("fileCount") or 0 for row in workspace_rows),
-            "totalStorageUsedBytes": sum(row.get("storageUsedBytes") or 0 for row in workspace_rows),
-            "totalStorageUsed": _bytes_label(sum(row.get("storageUsedBytes") or 0 for row in workspace_rows)),
-            "overLimitWorkspaces": sum(1 for row in workspace_rows if row.get("overLimit")),
-            "failedFiles": sum(row.get("failedFileCount") or 0 for row in workspace_rows),
-            "totalMembers": sum(row.get("memberCount") or 0 for row in workspace_rows),
-        },
+        "success": True,
+        "activities": [
+            {
+                "id": row.get("id"),
+                "workspaceId": row.get("user_id"),
+                "workspaceName": f"Workspace của {row.get('name') or row.get('email') or 'người dùng'}",
+                "type": row.get("type"),
+                "message": row.get("action") or "Hoạt động workspace",
+                "actor": row.get("email") or row.get("name") or "System",
+                "createdAt": row.get("created_at"),
+            }
+            for row in rows
+        ],
     }
+
+
+@router.post("/workspaces", status_code=status.HTTP_201_CREATED)
+async def create_workspace(request: Request, admin_user: dict = Depends(require_admin), db = Depends(get_db)):
+    payload = await request.json()
+    name = str(payload.get("name") or payload.get("workspaceName") or "").strip()
+    owner_email = normalize_email(str(payload.get("ownerEmail") or payload.get("owner") or ""))
+    tier = validate_tier(str(payload.get("plan") or payload.get("tier") or "free"))
+    if not name:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Tên workspace không được để trống.")
+    if not owner_email or "@" not in owner_email:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Owner email không hợp lệ.")
+    users_rows = db.table("users").select("*").eq("email", owner_email).limit(1).execute().data or []
+    if not users_rows:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy owner email trong hệ thống.")
+    user = users_rows[0]
+    db.table("users").update({"tier": tier, "usage_limit": tier_limit(tier)}).eq("id", user["id"]).execute()
+    settings_payload = {
+        "workspaceName": name[:120],
+        "retention": str(payload.get("retentionPolicy") or payload.get("retention") or "30")[:30],
+        "fileSizeLimit": int(payload.get("fileSizeLimit") or payload.get("storageLimitMb") or DEFAULT_WORKSPACE_ADMIN_SETTINGS["fileSizeLimit"]),
+        "allowedTypes": DEFAULT_WORKSPACE_ADMIN_SETTINGS["allowedTypes"],
+        "aiEnabled": True,
+        "notes": str(payload.get("notes") or "")[:1000],
+        "customFileLimit": int(payload.get("fileLimit") or 0),
+        "customStorageLimitBytes": int(payload.get("storageLimitBytes") or 0),
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+    }
+    _set_user_json_setting(db, str(user["id"]), "workspace", settings_payload)
+    db.table("operation_logs").insert({"user_id": admin_user.get("id"), "type": "workspace", "action": f"Admin created workspace settings for {owner_email}"}).execute()
+    return {"success": True, "workspace": _workspace_payload({**user, "tier": tier}, 0, settings_payload)}
+
+
+@router.get("/workspaces/{workspace_id}")
+async def get_workspace(workspace_id: str, _: dict = Depends(require_admin), db = Depends(get_db)):
+    row = next((item for item in _workspace_dataset(db) if str(item.get("id")) == str(workspace_id) or str(item.get("userId")) == str(workspace_id)), None)
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy workspace.")
+    return {"success": True, "workspace": row}
+
+
+@router.patch("/workspaces/{workspace_id}")
+async def update_workspace(workspace_id: str, request: Request, admin_user: dict = Depends(require_admin), db = Depends(get_db)):
+    payload = await request.json()
+    users_rows = db.table("users").select("*").eq("id", workspace_id).limit(1).execute().data or []
+    if not users_rows:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy workspace.")
+    user = users_rows[0]
+    current = _get_user_json_setting(db, workspace_id, "workspace", DEFAULT_WORKSPACE_ADMIN_SETTINGS)
+    if payload.get("plan") or payload.get("tier"):
+        tier = validate_tier(str(payload.get("plan") or payload.get("tier")))
+        user = (db.table("users").update({"tier": tier, "usage_limit": tier_limit(tier)}).eq("id", workspace_id).execute().data or [{**user, "tier": tier}])[0]
+    if payload.get("status"):
+        user = (db.table("users").update({"status": _validate_user_status(str(payload.get("status")))}).eq("id", workspace_id).execute().data or [user])[0]
+    updated_settings = {
+        **current,
+        "workspaceName": str(payload.get("name") or payload.get("workspaceName") or current.get("workspaceName") or "").strip()[:120] or DEFAULT_WORKSPACE_ADMIN_SETTINGS["workspaceName"],
+        "retention": str(payload.get("retentionPolicy") or payload.get("retention") or current.get("retention") or "30")[:30],
+        "fileSizeLimit": int(payload.get("fileSizeLimit") or current.get("fileSizeLimit") or DEFAULT_WORKSPACE_ADMIN_SETTINGS["fileSizeLimit"]),
+        "customFileLimit": int(payload.get("fileLimit") or current.get("customFileLimit") or 0),
+        "customStorageLimitBytes": int(payload.get("storageLimitBytes") or current.get("customStorageLimitBytes") or 0),
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+    }
+    _set_user_json_setting(db, workspace_id, "workspace", updated_settings)
+    files_count = len(db.table("files").select("id").eq("user_id", workspace_id).execute().data or [])
+    db.table("operation_logs").insert({"user_id": admin_user.get("id"), "type": "workspace", "action": f"Admin updated workspace {workspace_id}"}).execute()
+    return {"success": True, "workspace": _workspace_payload(user, files_count, updated_settings)}
+
+
+@router.patch("/workspaces/{workspace_id}/quota")
+async def update_workspace_quota(workspace_id: str, request: Request, admin_user: dict = Depends(require_admin), db = Depends(get_db)):
+    payload = await request.json()
+    users_rows = db.table("users").select("*").eq("id", workspace_id).limit(1).execute().data or []
+    if not users_rows:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy workspace.")
+    current = _get_user_json_setting(db, workspace_id, "workspace", DEFAULT_WORKSPACE_ADMIN_SETTINGS)
+    file_limit = int(payload.get("fileLimit") or current.get("customFileLimit") or 0)
+    storage_limit_bytes = int(payload.get("storageLimitBytes") or current.get("customStorageLimitBytes") or 0)
+    if file_limit < 0 or storage_limit_bytes < 0:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Quota không hợp lệ.")
+    updated_settings = {
+        **current,
+        "customFileLimit": file_limit,
+        "customStorageLimitBytes": storage_limit_bytes,
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+    }
+    _set_user_json_setting(db, workspace_id, "workspace", updated_settings)
+    files_count = len(db.table("files").select("id").eq("user_id", workspace_id).execute().data or [])
+    db.table("operation_logs").insert({"user_id": admin_user.get("id"), "type": "workspace", "action": f"Admin updated quota for workspace {workspace_id}"}).execute()
+    return {"success": True, "workspace": _workspace_payload(users_rows[0], files_count, updated_settings)}
+
+
+@router.delete("/workspaces/{workspace_id}")
+async def delete_workspace(workspace_id: str, admin_user: dict = Depends(require_admin), db = Depends(get_db)):
+    users_rows = db.table("users").select("id").eq("id", workspace_id).limit(1).execute().data or []
+    if not users_rows:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy workspace.")
+    _set_user_json_setting(db, workspace_id, "workspace", {**DEFAULT_WORKSPACE_ADMIN_SETTINGS, "workspaceName": "Workspace đã ngừng hoạt động", "updatedAt": datetime.now(timezone.utc).isoformat()})
+    db.table("users").update({"status": "inactive"}).eq("id", workspace_id).execute()
+    db.table("operation_logs").insert({"user_id": admin_user.get("id"), "type": "workspace", "action": f"Admin deactivated workspace {workspace_id}"}).execute()
+    return {"success": True}
+
+
+@router.get("/workspaces/{workspace_id}/export")
+async def export_workspace(workspace_id: str, _: dict = Depends(require_admin), db = Depends(get_db)):
+    row = next((item for item in _workspace_dataset(db) if str(item.get("id")) == str(workspace_id) or str(item.get("userId")) == str(workspace_id)), None)
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy workspace.")
+    columns = ["id", "name", "ownerName", "ownerEmail", "plan", "memberCount", "fileCount", "storageUsedBytes", "storageLimitBytes", "retention", "status", "createdAt", "updatedAt"]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=columns)
+    writer.writeheader()
+    writer.writerow({column: row.get(column, "") for column in columns})
+    return Response(
+        "\ufeff" + buffer.getvalue(),
+        media_type="text/csv; charset=utf-8",
+        headers=safe_attachment_headers(f"workspace-{workspace_id}.csv"),
+    )
+
+
+@router.post("/workspaces/import")
+async def import_workspaces(file: UploadFile = File(...), admin_user: dict = Depends(require_admin), db = Depends(get_db)):
+    content = await file.read()
+    name = (file.filename or "").lower()
+    rows: list[dict] = []
+    if name.endswith(".json"):
+        parsed = json.loads(content.decode("utf-8-sig"))
+        rows = parsed if isinstance(parsed, list) else parsed.get("items", [])
+    elif name.endswith(".csv"):
+        rows = list(csv.DictReader(io.StringIO(content.decode("utf-8-sig"))))
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Chỉ hỗ trợ import CSV/JSON.")
+    imported = 0
+    errors = []
+    for index, row in enumerate(rows, start=1):
+        try:
+            email = normalize_email(row.get("ownerEmail") or row.get("owner_email") or row.get("email") or "")
+            users_rows = db.table("users").select("*").eq("email", email).limit(1).execute().data or []
+            if not users_rows:
+                raise ValueError("Owner email không tồn tại")
+            user = users_rows[0]
+            settings_payload = {
+                **_get_user_json_setting(db, str(user["id"]), "workspace", DEFAULT_WORKSPACE_ADMIN_SETTINGS),
+                "workspaceName": str(row.get("name") or row.get("workspaceName") or "").strip()[:120] or f"Workspace của {user.get('name') or email}",
+                "retention": str(row.get("retention") or row.get("retentionPolicy") or "30")[:30],
+                "updatedAt": datetime.now(timezone.utc).isoformat(),
+            }
+            _set_user_json_setting(db, str(user["id"]), "workspace", settings_payload)
+            imported += 1
+        except Exception as exc:
+            errors.append({"row": index, "message": str(exc)})
+    db.table("operation_logs").insert({"user_id": admin_user.get("id"), "type": "workspace", "action": f"Admin imported {imported}/{len(rows)} workspaces"}).execute()
+    return {"success": not errors, "imported": imported, "failed": len(errors), "errors": errors}
 
 
 @router.get("/workspaces/{user_id}/settings")
@@ -1627,7 +1922,7 @@ async def ai_prompts_dashboard(_: dict = Depends(require_admin), db = Depends(ge
             for row in logs
             if "prompt" in str(row.get("action") or "").lower()
         ],
-        "playgroundState": {"selectedPrompt": prompts[0].get("promptKey") if prompts else "", "sampleInput": "", "selectedModel": routing.get("defaultModel"), "temperature": routing.get("temperature"), "maxTokens": routing.get("maxTokens"), "outputLanguage": "vi", "testStatus": "idle"},
+        "playgroundState": {"selectedPrompt": prompts[0].get("promptKey") if prompts else "", "testInput": "", "selectedModel": routing.get("defaultModel"), "temperature": routing.get("temperature"), "maxTokens": routing.get("maxTokens"), "outputLanguage": "vi", "testStatus": "idle"},
         "promptStats": {
             "totalPrompts": len(prompts),
             "activePrompts": len(active_prompts),
@@ -1703,13 +1998,13 @@ async def duplicate_ai_prompt(prompt_key: str, admin_user: dict = Depends(requir
 async def test_ai_prompt(request: Request, admin_user: dict = Depends(require_admin), db = Depends(get_db)):
     payload = await request.json()
     prompt_key = str((payload or {}).get("selectedPrompt") or "").strip()
-    sample_input = str((payload or {}).get("sampleInput") or "").strip()
+    test_input = str((payload or {}).get("testInput") or "").strip()
     prompt = next((row for row in _merged_prompts(db) if row.get("promptKey") == prompt_key), None)
     if not prompt:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy prompt.")
     started = time.time()
     try:
-        output = await generate(prompt.get("systemPrompt") or prompt.get("promptTemplate") or "", sample_input or "Hãy trả lời kiểm thử ngắn gọn.")
+        output = await generate(prompt.get("systemPrompt") or prompt.get("promptTemplate") or "", test_input or "Hãy trả lời kiểm thử ngắn gọn.")
         status_value = "success"
     except Exception as exc:
         output = str(getattr(exc, "detail", str(exc)))
@@ -1719,10 +2014,10 @@ async def test_ai_prompt(request: Request, admin_user: dict = Depends(require_ad
     return {
         "success": status_value == "success",
         "output": output,
-        "inputTokens": len((sample_input or "").split()),
+        "inputTokens": len((test_input or "").split()),
         "outputTokens": len((output or "").split()),
         "latency": latency,
-        "estimatedCost": round(((len((sample_input or "").split()) + len((output or "").split())) / 1000) * 0.00035, 6),
+        "estimatedCost": round(((len((test_input or "").split()) + len((output or "").split())) / 1000) * 0.00035, 6),
         "testStatus": status_value,
     }
 
@@ -3421,7 +3716,8 @@ async def update_feedback_status(feedback_id: int, payload: FeedbackStatusReques
 @router.get("/templates")
 async def list_admin_templates(_: dict = Depends(require_admin), db = Depends(get_db)):
     response = db.table("templates").select("*").order("created_at", desc=True).execute()
-    return {"templates": [_template_payload(row) for row in (response.data or [])]}
+    metadata = _template_metadata(db)
+    return {"templates": [_template_payload(row, metadata.get(str(row.get("id")))) for row in (response.data or [])]}
 
 
 @router.post("/templates", status_code=status.HTTP_201_CREATED)

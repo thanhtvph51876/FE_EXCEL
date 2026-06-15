@@ -10,11 +10,12 @@ CREATE TABLE IF NOT EXISTS users (
     usage_limit INT DEFAULT 20,
     status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'pending', 'suspended', 'deleted')),
     role VARCHAR(20) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
-    CONSTRAINT users_admin_email_only CHECK (role <> 'admin' OR lower(email) = 'admin150905@gmail.com'),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+CREATE INDEX IF NOT EXISTS users_created_idx ON users(created_at DESC);
 
-CREATE UNIQUE INDEX IF NOT EXISTS users_single_admin_role_idx ON users (role) WHERE role = 'admin';
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_admin_email_only;
+DROP INDEX IF EXISTS users_single_admin_role_idx;
 
 ALTER TABLE users DROP CONSTRAINT IF EXISTS users_tier_allowed;
 ALTER TABLE users DROP CONSTRAINT IF EXISTS users_tier_check;
@@ -43,6 +44,19 @@ CREATE TABLE IF NOT EXISTS user_sessions (
 );
 
 CREATE INDEX IF NOT EXISTS user_sessions_user_idx ON user_sessions(user_id);
+
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
+    ip_address VARCHAR(80) DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS password_reset_tokens_user_idx ON password_reset_tokens(user_id);
+CREATE INDEX IF NOT EXISTS password_reset_tokens_hash_idx ON password_reset_tokens(token_hash);
 
 CREATE TABLE IF NOT EXISTS failed_login_attempts (
     id BIGSERIAL PRIMARY KEY,
@@ -112,7 +126,23 @@ ALTER TABLE files ADD COLUMN IF NOT EXISTS category VARCHAR(60) DEFAULT 'source'
 ALTER TABLE files ADD COLUMN IF NOT EXISTS version_number INT NOT NULL DEFAULT 1;
 ALTER TABLE files ADD COLUMN IF NOT EXISTS parent_file_id UUID REFERENCES files(id) ON DELETE SET NULL;
 ALTER TABLE files ADD COLUMN IF NOT EXISTS is_important BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE files ADD COLUMN IF NOT EXISTS size_bytes BIGINT NOT NULL DEFAULT 0;
+UPDATE files
+SET size_bytes = ROUND(
+    (substring(size FROM '([0-9]+(\.[0-9]+)?)')::numeric) *
+    CASE
+        WHEN UPPER(size) LIKE '%GB%' THEN 1073741824
+        WHEN UPPER(size) LIKE '%MB%' THEN 1048576
+        WHEN UPPER(size) LIKE '%KB%' THEN 1024
+        ELSE 1
+    END
+)::bigint
+WHERE size_bytes = 0
+    AND COALESCE(size, '') <> ''
+    AND substring(size FROM '([0-9]+(\.[0-9]+)?)') IS NOT NULL;
 CREATE INDEX IF NOT EXISTS files_user_sha_idx ON files(user_id, sha256);
+CREATE INDEX IF NOT EXISTS files_user_uploaded_idx ON files(user_id, uploaded_at DESC);
+CREATE INDEX IF NOT EXISTS files_user_size_bytes_idx ON files(user_id, size_bytes);
 CREATE INDEX IF NOT EXISTS files_workspace_idx ON files(workspace_id);
 CREATE INDEX IF NOT EXISTS files_label_idx ON files(data_label);
 
@@ -140,15 +170,52 @@ CREATE TABLE IF NOT EXISTS chat_threads (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     title VARCHAR(150),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ
 );
+ALTER TABLE chat_threads ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE chat_threads ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+CREATE INDEX IF NOT EXISTS chat_threads_user_idx ON chat_threads(user_id);
+CREATE INDEX IF NOT EXISTS chat_threads_user_updated_idx ON chat_threads(user_id, updated_at DESC);
 
 CREATE TABLE IF NOT EXISTS chat_messages (
     id BIGSERIAL PRIMARY KEY,
     thread_id UUID REFERENCES chat_threads(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     sender VARCHAR(10) NOT NULL,
+    role VARCHAR(20),
     text TEXT NOT NULL,
+    content TEXT,
+    status VARCHAR(30) DEFAULT 'sent',
+    metadata_json JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES users(id) ON DELETE CASCADE;
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS role VARCHAR(20);
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS content TEXT;
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS status VARCHAR(30) DEFAULT 'sent';
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS metadata_json JSONB DEFAULT '{}'::jsonb;
+
+CREATE INDEX IF NOT EXISTS chat_messages_thread_idx ON chat_messages(thread_id);
+CREATE INDEX IF NOT EXISTS chat_messages_thread_created_idx ON chat_messages(thread_id, created_at ASC);
+CREATE INDEX IF NOT EXISTS chat_messages_user_created_idx ON chat_messages(user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS chat_message_attachments (
+    id BIGSERIAL PRIMARY KEY,
+    message_id BIGINT REFERENCES chat_messages(id) ON DELETE CASCADE,
+    file_id UUID REFERENCES files(id) ON DELETE CASCADE,
+    type VARCHAR(40) DEFAULT 'workspace_file',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS chat_conversation_files (
+    id BIGSERIAL PRIMARY KEY,
+    conversation_id UUID REFERENCES chat_threads(id) ON DELETE CASCADE,
+    file_id UUID REFERENCES files(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(conversation_id, file_id)
 );
 
 CREATE TABLE IF NOT EXISTS operation_logs (
@@ -159,6 +226,7 @@ CREATE TABLE IF NOT EXISTS operation_logs (
     tokens_used INT DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+CREATE INDEX IF NOT EXISTS operation_logs_user_created_idx ON operation_logs(user_id, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS ai_usage (
     id BIGSERIAL PRIMARY KEY,
@@ -188,6 +256,8 @@ CREATE TABLE IF NOT EXISTS ai_usage_events (
     file_id UUID REFERENCES files(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+CREATE INDEX IF NOT EXISTS ai_usage_events_user_created_idx ON ai_usage_events(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS ai_usage_events_created_idx ON ai_usage_events(created_at DESC);
 
 CREATE TABLE IF NOT EXISTS billing_tier_audit (
     id BIGSERIAL PRIMARY KEY,
@@ -227,6 +297,19 @@ CREATE TABLE IF NOT EXISTS plans (
     active BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS monthly_price INT NOT NULL DEFAULT 0;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS yearly_price INT NOT NULL DEFAULT 0;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS features_json JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS limits_json JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+INSERT INTO plans (id, name, tier, amount, monthly_price, yearly_price, currency, billing_cycle, entitlement, features_json, limits_json, active, is_active)
+VALUES
+    ('free', 'Free', 'free', 0, 0, 0, 'VND', 'monthly', '{"ai_requests_per_day":20}'::jsonb, '["20 AI requests / ngày", "Tối đa 3 file", "Tối đa 5MB / file"]'::jsonb, '{"aiCredits":20,"filesPerMonth":3,"maxFileSizeMb":5,"storageGb":1}'::jsonb, true, true),
+    ('pro', 'Pro', 'pro', 199000, 199000, 1990000, 'VND', 'monthly', '{"ai_requests_per_day":2000}'::jsonb, '["2.000 AI credits / tháng", "100 file / tháng", "Tối đa 50MB / file", "Mở khóa AI Table Builder, AI Document, Autopilot"]'::jsonb, '{"aiCredits":2000,"filesPerMonth":100,"maxFileSizeMb":50,"storageGb":100}'::jsonb, true, true),
+    ('business', 'Business', 'business', 299000, 299000, 2868000, 'VND', 'monthly', '{"ai_requests_per_day":1200}'::jsonb, '["20.000 AI credits / tháng", "250 file / tháng", "Tối đa 100MB / file", "Workspace đội nhóm và xuất PDF"]'::jsonb, '{"aiCredits":20000,"filesPerMonth":250,"maxFileSizeMb":100,"storageGb":500}'::jsonb, true, true),
+    ('enterprise', 'Enterprise', 'enterprise', 0, 0, 0, 'VND', 'monthly', '{"ai_requests_per_day":999999}'::jsonb, '["Quota tùy chỉnh", "Workspace nhiều thành viên", "Hỗ trợ ưu tiên", "SLA và triển khai riêng"]'::jsonb, '{"aiCredits":999999,"filesPerMonth":99999,"maxFileSizeMb":200,"storageGb":1000}'::jsonb, true, true)
+ON CONFLICT (id) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS subscriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -240,6 +323,9 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS billing_cycle VARCHAR(20) NOT NULL DEFAULT 'monthly';
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS provider VARCHAR(40) DEFAULT '';
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS provider_subscription_id VARCHAR(180) DEFAULT '';
 
 CREATE TABLE IF NOT EXISTS invoices (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -253,6 +339,7 @@ CREATE TABLE IF NOT EXISTS invoices (
 
 CREATE TABLE IF NOT EXISTS payment_transactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_id UUID,
     provider VARCHAR(40) NOT NULL DEFAULT 'manual',
     provider_transaction_id VARCHAR(180) DEFAULT '',
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -260,9 +347,14 @@ CREATE TABLE IF NOT EXISTS payment_transactions (
     currency VARCHAR(10) DEFAULT 'VND',
     status VARCHAR(30) NOT NULL DEFAULT 'pending',
     raw_webhook_payload_hash VARCHAR(64) DEFAULT '',
+    raw_payload_json JSONB DEFAULT '{}'::jsonb,
+    signature_valid BOOLEAN DEFAULT false,
     verified_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS order_id UUID;
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS raw_payload_json JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE payment_transactions ADD COLUMN IF NOT EXISTS signature_valid BOOLEAN DEFAULT false;
 
 CREATE TABLE IF NOT EXISTS payment_webhook_events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -278,6 +370,99 @@ CREATE TABLE IF NOT EXISTS payment_webhook_events (
     processed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(provider, provider_event_id)
+);
+
+CREATE TABLE IF NOT EXISTS billing_orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    plan_id VARCHAR(40) NOT NULL,
+    billing_cycle VARCHAR(20) NOT NULL DEFAULT 'monthly',
+    provider VARCHAR(40) NOT NULL,
+    amount INT NOT NULL DEFAULT 0,
+    currency VARCHAR(10) NOT NULL DEFAULT 'VND',
+    status VARCHAR(30) NOT NULL DEFAULT 'pending',
+    order_code VARCHAR(80) NOT NULL UNIQUE,
+    provider_order_id VARCHAR(180) DEFAULT '',
+    checkout_url TEXT DEFAULT '',
+    qr_code TEXT DEFAULT '',
+    expires_at TIMESTAMPTZ,
+    paid_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS billing_orders_user_idx ON billing_orders(user_id);
+CREATE INDEX IF NOT EXISTS billing_orders_status_idx ON billing_orders(status);
+
+CREATE TABLE IF NOT EXISTS usage_quotas (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    plan_id VARCHAR(40) NOT NULL,
+    ai_credits_limit INT NOT NULL DEFAULT 0,
+    ai_credits_used INT NOT NULL DEFAULT 0,
+    files_limit INT NOT NULL DEFAULT 0,
+    files_used INT NOT NULL DEFAULT 0,
+    storage_limit_bytes BIGINT NOT NULL DEFAULT 0,
+    storage_used_bytes BIGINT NOT NULL DEFAULT 0,
+    period_start TIMESTAMPTZ DEFAULT NOW(),
+    period_end TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS usage_quotas_user_idx ON usage_quotas(user_id);
+
+CREATE TABLE IF NOT EXISTS autopilot_plans (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    file_id UUID REFERENCES files(id) ON DELETE SET NULL,
+    goal TEXT NOT NULL,
+    file_name VARCHAR(255) NOT NULL DEFAULT '',
+    steps JSONB NOT NULL DEFAULT '[]'::jsonb,
+    expected_output JSONB NOT NULL DEFAULT '{}'::jsonb,
+    file_profile JSONB NOT NULL DEFAULT '{}'::jsonb,
+    status VARCHAR(30) NOT NULL DEFAULT 'planned',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS autopilot_plans_user_created_idx ON autopilot_plans(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS autopilot_plans_file_idx ON autopilot_plans(file_id);
+
+CREATE TABLE IF NOT EXISTS autopilot_drafts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    plan_id UUID REFERENCES autopilot_plans(id) ON DELETE CASCADE,
+    file_id UUID REFERENCES files(id) ON DELETE SET NULL,
+    summary TEXT NOT NULL DEFAULT '',
+    tables JSONB NOT NULL DEFAULT '[]'::jsonb,
+    insights JSONB NOT NULL DEFAULT '[]'::jsonb,
+    warnings JSONB NOT NULL DEFAULT '[]'::jsonb,
+    output_file_id UUID REFERENCES output_files(id) ON DELETE SET NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'completed',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS autopilot_drafts_user_created_idx ON autopilot_drafts(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS autopilot_drafts_plan_idx ON autopilot_drafts(plan_id);
+
+CREATE TABLE IF NOT EXISTS rate_limit_buckets (
+    key VARCHAR(255) NOT NULL,
+    window_start BIGINT NOT NULL,
+    window_seconds INT NOT NULL,
+    hit_count INT NOT NULL DEFAULT 0,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (key, window_start)
+);
+CREATE INDEX IF NOT EXISTS rate_limit_buckets_updated_idx ON rate_limit_buckets(updated_at);
+
+CREATE TABLE IF NOT EXISTS enterprise_leads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    name VARCHAR(180) NOT NULL,
+    email VARCHAR(180) NOT NULL,
+    phone VARCHAR(60) DEFAULT '',
+    company VARCHAR(180) DEFAULT '',
+    need TEXT DEFAULT '',
+    status VARCHAR(30) DEFAULT 'new',
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS admin_audit_logs (

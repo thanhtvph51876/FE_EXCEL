@@ -1,4 +1,11 @@
-ADMIN_EMAIL = "admin150905@gmail.com"
+import os
+
+
+def _admin_emails() -> set[str]:
+    raw = os.getenv("ADMIN_EMAILS") or os.getenv("ADMIN_EMAIL") or ""
+    return {normalize_email(email) for email in raw.split(",") if normalize_email(email)}
+
+
 USER_STATUSES = ("active", "inactive", "pending", "suspended", "deleted")
 WORKSPACE_ROLES = ("owner", "admin", "manager", "staff", "member", "viewer")
 WORKSPACE_MANAGE_ROLES = ("owner", "admin", "manager")
@@ -50,11 +57,12 @@ def normalize_email(email: str) -> str:
 
 
 def is_admin_email(email: str) -> bool:
-    return normalize_email(email) == ADMIN_EMAIL
+    return normalize_email(email) in _admin_emails()
 
 
 def effective_role(user: dict) -> str:
-    if user.get("role") == "admin" and is_admin_email(user.get("email", "")):
+    role = (user.get("role") or "user").strip().lower()
+    if role == "admin" or is_admin_email(user.get("email", "")):
         return "admin"
     return "user"
 

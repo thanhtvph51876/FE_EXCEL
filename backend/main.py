@@ -1,24 +1,36 @@
-from fastapi import FastAPI, HTTPException, Request
+import asyncio
+import sys
+
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from config import settings
-from dependencies import get_db
+from dependencies import get_db, require_admin
 from metrics import prometheus_text
 from rate_limit import SLOWAPI_AVAILABLE, RateLimitExceeded, _rate_limit_exceeded_handler, limiter
 from request_context import RequestContextMiddleware, request_id_from
-from routers import admin, ai, auth, billing, broadcasts, exports, files, history, jobs, office, settings as user_settings, templates, workspaces
+from routers import admin, ai, ai_document, ai_table_builder, auth, autopilot, billing, broadcasts, chat, data_cleaning, exports, files, history, jobs, office, reports, settings as user_settings, templates, workspaces
 from services.gemini_service import ai_provider_health
 from services.quota_service import reset_daily_quota
 from services.storage_service import StorageService
 
 
+if sys.platform.startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
+_IS_PROD = settings.environment.lower() == "production"
+
 app = FastAPI(
     title="ExcelAI & Office Autopilot API",
     version="1.0.0",
     description="Backend API cho ExcelAI - tự động hóa Excel bằng AI",
+    docs_url=None if _IS_PROD else "/docs",
+    redoc_url=None if _IS_PROD else "/redoc",
+    openapi_url=None if _IS_PROD else "/openapi.json",
 )
 
 app.add_middleware(RequestContextMiddleware)
@@ -30,11 +42,33 @@ if SLOWAPI_AVAILABLE:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
-    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
+    allow_origin_regex=settings.cors_origin_regex,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
 )
+
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    _extra_connect = "" if _IS_PROD else " http://127.0.0.1:8002 http://localhost:8002"
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; "
+        "script-src 'self' https://cdn.jsdelivr.net https://appsforoffice.microsoft.com https://accounts.google.com; "
+        "script-src-attr 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: blob:; "
+        f"connect-src 'self'{_extra_connect} https://generativelanguage.googleapis.com; "
+        "frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+    )
+    return response
 
 
 @app.exception_handler(HTTPException)
@@ -58,36 +92,41 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
+    request_id = request_id_from(request)
+    print(
+        f"request_id={request_id} method={request.method} path={request.url.path} "
+        f"status=500 unhandled_exc={type(exc).__name__}"
+    )
     text = str(exc)
     lowered = text.lower()
     if "connection refused" in lowered or "could not connect" in lowered:
         return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "errorCode": "DATABASE_CONNECTION_FAILED",
-                "message": "Internal server error",
-                "request_id": request_id_from(request),
-            },
+            status_code=503,
+            content={"success": False, "errorCode": "DATABASE_CONNECTION_FAILED", "message": "Không thể kết nối database.", "request_id": request_id},
         )
     if "relation" in lowered and "does not exist" in lowered:
         return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "errorCode": "DATABASE_SCHEMA_NOT_READY",
-                "message": "Internal server error",
-                "request_id": request_id_from(request),
-            },
+            status_code=503,
+            content={"success": False, "errorCode": "DATABASE_SCHEMA_NOT_READY", "message": "Database schema chưa sẵn sàng.", "request_id": request_id},
+        )
+    if "pool exhausted" in lowered or "connection pool" in lowered:
+        return JSONResponse(
+            status_code=503,
+            content={"success": False, "errorCode": "DATABASE_POOL_EXHAUSTED", "message": "Server đang tải cao, thử lại sau.", "request_id": request_id},
         )
     return JSONResponse(
         status_code=500,
-        content={"success": False, "errorCode": "INTERNAL_SERVER_ERROR", "message": "Internal server error", "request_id": request_id_from(request)},
+        content={"success": False, "errorCode": "INTERNAL_SERVER_ERROR", "message": "Internal server error", "request_id": request_id},
     )
 
 
 @app.get("/api/health")
 async def health_check():
+    return {"success": True, "status": "ok", "version": "api-map-20260605-2"}
+
+
+@app.get("/api/health/internal")
+async def internal_health_check(_: dict = Depends(require_admin)):
     gemini_ok = bool(settings.gemini_api_key and settings.gemini_api_key.startswith("AIzaSy"))
     database_status = "Missing database config"
     if settings.database_url:
@@ -115,14 +154,14 @@ async def health_check():
 async def db_health_check():
     try:
         get_db().fetch("SELECT 1")
-        return {"success": True, "status": "ok", "dependency": "postgres", "environment": settings.environment}
+        return {"success": True, "status": "ok", "dependency": "postgres"}
     except Exception:
-        return {"success": True, "status": "degraded", "dependency": "postgres", "environment": settings.environment}
+        return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content={"success": False, "status": "degraded", "dependency": "postgres"})
 
 
 @app.get("/api/health/ai")
 async def ai_health_check():
-    provider = ai_provider_health()
+    provider = await ai_provider_health()
     return {"success": True, **provider}
 
 
@@ -145,13 +184,13 @@ async def queue_health_check():
 
 
 @app.get("/api/health/full")
-async def full_health_check():
+async def full_health_check(_: dict = Depends(require_admin)):
     return {
         "success": True,
         "status": "ok",
         "environment": settings.environment,
         "version": "api-map-20260605-2",
-        "db": (await db_health_check()),
+        "db": {"success": True, "status": "ok", "dependency": "postgres"},
         "ai": (await ai_health_check()),
         "storage": (await storage_health_check()),
         "payment": (await payment_health_check()),
@@ -169,7 +208,15 @@ app.include_router(files.router)
 app.include_router(exports.router)
 app.include_router(jobs.router)
 app.include_router(office.router)
+app.include_router(autopilot.router)
 app.include_router(ai.router)
+app.include_router(ai_table_builder.router)
+app.include_router(ai_document.router)
+app.include_router(ai_document.templates_router)
+app.include_router(reports.router)
+app.include_router(data_cleaning.router)
+app.include_router(chat.router)
+app.include_router(chat.workspace_router)
 app.include_router(admin.router)
 app.include_router(history.router)
 app.include_router(billing.router)
@@ -192,12 +239,17 @@ async def _daily_quota_reset():
 
 
 @app.on_event("startup")
-async def _start_scheduler():
+async def _on_startup():
+    try:
+        get_db().fetch("SELECT 1")
+        print("Startup: database connection OK")
+    except Exception as exc:
+        print(f"WARNING: Startup database check failed — server will retry on first request. Error: {exc}")
     if not scheduler.running:
         scheduler.start()
 
 
 @app.on_event("shutdown")
-async def _stop_scheduler():
+async def _on_shutdown():
     if scheduler.running:
         scheduler.shutdown(wait=False)

@@ -16,6 +16,19 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1)
 
 
+class GoogleAuthRequest(BaseModel):
+    credential: str = Field(min_length=20)
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=150)
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(min_length=20, max_length=300)
+    password: str = Field(min_length=6, max_length=128)
+
+
 class ChatRequest(BaseModel):
     message: str
     history: List[Dict[str, Any]] = []

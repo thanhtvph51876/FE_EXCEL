@@ -1,4 +1,5 @@
 import re
+from threading import Lock
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -8,10 +9,36 @@ from config import settings
 
 try:
     import psycopg2
+    import psycopg2.pool
     from psycopg2.extras import RealDictCursor
 except ImportError:  # pragma: no cover - handled at runtime with a clear error.
     psycopg2 = None
     RealDictCursor = None
+
+
+_pool: "psycopg2.pool.ThreadedConnectionPool | None" = None
+_pool_url: str = ""
+_pool_lock = Lock()
+
+
+def _get_pool(database_url: str) -> "psycopg2.pool.ThreadedConnectionPool":
+    global _pool, _pool_url
+    if _pool is None or _pool_url != database_url:
+        with _pool_lock:
+            if _pool is None or _pool_url != database_url:
+                if _pool is not None:
+                    try:
+                        _pool.closeall()
+                    except Exception:
+                        pass
+                _pool = psycopg2.pool.ThreadedConnectionPool(
+                    minconn=max(1, settings.db_pool_min),
+                    maxconn=max(settings.db_pool_min, settings.db_pool_max),
+                    dsn=database_url,
+                    cursor_factory=RealDictCursor,
+                )
+                _pool_url = database_url
+    return _pool
 
 
 IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -34,6 +61,9 @@ PRIMARY_KEYS = {
     "output_files": ["id"],
     "payment_transactions": ["id"],
     "payment_webhook_events": ["id"],
+    "password_reset_tokens": ["id"],
+    "autopilot_drafts": ["id"],
+    "autopilot_plans": ["id"],
     "business_metrics": ["id"],
     "plans": ["id"],
     "subscriptions": ["id"],
@@ -232,6 +262,8 @@ class PgQuery:
         return SimpleNamespace(data=result)
 
     def _execute_update(self):
+        if not self.filters:
+            raise RuntimeError(f"UPDATE {self.table} without WHERE is forbidden.")
         params: list[Any] = []
         sets = []
         for col, value in self.payload.items():
@@ -259,6 +291,8 @@ class PgQuery:
         return SimpleNamespace(data=self.client.fetch(sql, values, commit=True))
 
     def _execute_delete(self):
+        if not self.filters:
+            raise RuntimeError(f"DELETE {self.table} without WHERE is forbidden.")
         params: list[Any] = []
         sql = f"DELETE FROM {self.table}{self._where(params)} RETURNING *"
         return SimpleNamespace(data=self.client.fetch(sql, params, commit=True))
@@ -276,7 +310,12 @@ class PgClient:
         return PgQuery(self, name)
 
     def fetch(self, sql: str, params: list[Any] | None = None, commit: bool = False):
-        with psycopg2.connect(self.database_url, cursor_factory=RealDictCursor) as conn:
+        pool = _get_pool(self.database_url)
+        try:
+            conn = pool.getconn()
+        except Exception as pool_exc:
+            raise RuntimeError("Database connection pool exhausted. Too many concurrent requests.") from pool_exc
+        try:
             with conn.cursor() as cur:
                 cur.execute(sql, params or [])
                 try:
@@ -285,4 +324,11 @@ class PgClient:
                     rows = []
             if commit:
                 conn.commit()
+            else:
+                conn.rollback()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            pool.putconn(conn)
         return rows

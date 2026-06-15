@@ -29,6 +29,23 @@ LOCAL_STORAGE_DIR=./storage
 STORAGE_BUCKET=excel-files
 ```
 
+Production cần dùng domain thật cho `FRONTEND_URL`, không dùng localhost:
+
+```env
+ENVIRONMENT=production
+FRONTEND_URL=https://your-domain.com
+CORS_ORIGINS=https://your-domain.com
+PASSWORD_RESET_MINUTES=30
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USERNAME=mailer@example.com
+SMTP_PASSWORD=your-smtp-password
+SMTP_FROM_EMAIL=no-reply@your-domain.com
+SMTP_FROM_NAME=ExcelAI
+```
+
+Link trong email reset password có dạng `https://your-domain.com/reset-password?resetToken=...`.
+
 `GEMINI_API_KEY` must start with `AIzaSy`. If it is missing or invalid, the backend still runs and `/api/health/ai` reports `degraded`.
 
 ## Run

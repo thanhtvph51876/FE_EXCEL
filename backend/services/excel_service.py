@@ -102,9 +102,15 @@ def _parse_csv(content: bytes) -> ParsedWorkbook:
     return _rows_from_dataframe(df)
 
 
-def _parse_xlsx(content: bytes) -> ParsedWorkbook:
+def _parse_xlsx(content: bytes, sheet_name: str | None = None) -> ParsedWorkbook:
     workbook = openpyxl.load_workbook(io.BytesIO(content), read_only=True, data_only=True)
-    sheet = workbook.active
+    if sheet_name:
+        if sheet_name not in workbook.sheetnames:
+            workbook.close()
+            raise ValueError("Không tìm thấy sheet trong file.")
+        sheet = workbook[sheet_name]
+    else:
+        sheet = workbook.active
     row_iter = sheet.iter_rows(values_only=True)
     try:
         raw_headers = next(row_iter)
@@ -122,19 +128,35 @@ def _parse_xlsx(content: bytes) -> ParsedWorkbook:
     return ParsedWorkbook(headers=headers, rows=rows)
 
 
-def _parse_xls(content: bytes) -> ParsedWorkbook:
-    df = pd.read_excel(io.BytesIO(content), dtype=str, keep_default_na=False, engine="xlrd")
+def _parse_xls(content: bytes, sheet_name: str | None = None) -> ParsedWorkbook:
+    df = pd.read_excel(io.BytesIO(content), dtype=str, keep_default_na=False, engine="xlrd", sheet_name=sheet_name or 0)
     return _rows_from_dataframe(df)
 
 
-def parse_workbook(filename: str, content: bytes) -> ParsedWorkbook:
+def parse_workbook(filename: str, content: bytes, sheet_name: str | None = None) -> ParsedWorkbook:
     lower = filename.lower()
     if lower.endswith(".csv"):
         return _parse_csv(content)
     if lower.endswith(".xlsx"):
-        return _parse_xlsx(content)
+        return _parse_xlsx(content, sheet_name)
     if lower.endswith(".xls"):
-        return _parse_xls(content)
+        return _parse_xls(content, sheet_name)
+    raise ValueError("Định dạng file không hỗ trợ.")
+
+
+def list_workbook_sheets(filename: str, content: bytes) -> List[str]:
+    lower = filename.lower()
+    if lower.endswith(".csv"):
+        return ["CSV"]
+    if lower.endswith(".xlsx"):
+        workbook = openpyxl.load_workbook(io.BytesIO(content), read_only=True, data_only=True)
+        try:
+            return list(workbook.sheetnames) or ["Sheet1"]
+        finally:
+            workbook.close()
+    if lower.endswith(".xls"):
+        xls = pd.ExcelFile(io.BytesIO(content), engine="xlrd")
+        return list(xls.sheet_names) or ["Sheet1"]
     raise ValueError("Định dạng file không hỗ trợ.")
 
 
@@ -159,7 +181,7 @@ def build_statistics(headers: List[str], rows: List[List[str]], total_rows: int)
     stats = {"totalRows": total_rows, "totalCols": len(headers), "missingValues": 0, "duplicateRows": 0, "columns": []}
     seen = set()
     for row in rows:
-        row_key = "|".join(row)
+        row_key = "|".join(str(v) for v in row)
         if row_key in seen:
             stats["duplicateRows"] += 1
         else:
@@ -171,7 +193,8 @@ def build_statistics(headers: List[str], rows: List[List[str]], total_rows: int)
         date_count = 0
         value_counts: Dict[str, int] = {}
         for row in rows:
-            value = row[col_index] if col_index < len(row) else ""
+            raw = row[col_index] if col_index < len(row) else ""
+            value = str(raw) if raw is not None and raw != "" and raw != 0 else ""
             if not value:
                 empty += 1
                 continue

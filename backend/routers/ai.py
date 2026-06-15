@@ -1,5 +1,6 @@
-import json
+﻿import json
 from typing import Any, Dict, List, Tuple
+import re
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
@@ -66,7 +67,7 @@ Kết quả rà soát: {scan_result}
 
 CLEAN_SYSTEM_PROMPT = """
 Người dùng muốn làm sạch cột dữ liệu theo rule sau.
-Cột: {column}, Rule: {rule}, Ví dụ dữ liệu: {sample_data}
+Cột: {column}, Rule: {rule}, Dữ liệu đầu vào: {source_values}
 Hãy trả lời ONLY JSON:
 {
   "formula": "=TRIM(A2)",
@@ -101,15 +102,15 @@ Hãy thiết kế cấu trúc bảng hoàn chỉnh. Trả lời ONLY JSON:
 {
   "tableName": "Tên bảng",
   "columns": [
-    { "name": "Tên cột", "type": "Văn bản|Số|Ngày tháng|Công thức", "sample": "Ví dụ giá trị" }
+    { "name": "Tên cột", "type": "Văn bản|Số|Ngày tháng|Công thức", "example": "Ví dụ giá trị" }
   ],
   "formulas": [
     { "col": "Tên cột công thức", "expr": "=CÔNG_THỨC", "desc": "Giải thích" }
   ],
-  "rows": [["row1col1", "row1col2", "..."], ["row2col1", "..."]],
+  "rows": [],
   "notes": "Ghi chú sử dụng bảng"
 }
-Tạo 5-8 cột phù hợp, 3 dòng sample data thực tế tiếng Việt.
+Tạo 5-8 cột phù hợp. Không tự tạo rows khi không có file thật.
 """
 
 DOC_BUILDER_SYSTEM_PROMPT = """
@@ -145,6 +146,18 @@ UNSAFE_VBA_PATTERNS = (
     "CreateTextFile",
     "DeleteFile",
     "DeleteFolder",
+    "Application.Run",
+    "CallByName",
+)
+
+UNSAFE_VBA_REGEXES = (
+    (re.compile(r"\bsh[\W_]*e[\W_]*l[\W_]*l\b", re.IGNORECASE), "Shell"),
+    (re.compile(r"\bcreate[\W_]*object\b", re.IGNORECASE), "CreateObject"),
+    (re.compile(r"\bget[\W_]*object\b", re.IGNORECASE), "GetObject"),
+    (re.compile(r"\bapplication[\W_]*\.[\W_]*run\b", re.IGNORECASE), "Application.Run"),
+    (re.compile(r"\bcall[\W_]*by[\W_]*name\b", re.IGNORECASE), "CallByName"),
+    (re.compile(r"\bwscript[\W_]*\.[\W_]*shell\b", re.IGNORECASE), "WScript.Shell"),
+    (re.compile(r"\burl[\W_]*download[\W_]*to[\W_]*file\b", re.IGNORECASE), "URLDownloadToFile"),
 )
 
 
@@ -191,7 +204,9 @@ def _require_ai_feature(current_user: dict, feature_name: str, db) -> None:
 
 def _unsafe_vba_matches(code: str) -> list[str]:
     lowered = code.lower()
-    return [pattern for pattern in UNSAFE_VBA_PATTERNS if pattern.lower() in lowered]
+    matches = [pattern for pattern in UNSAFE_VBA_PATTERNS if pattern.lower() in lowered]
+    matches.extend(label for regex, label in UNSAFE_VBA_REGEXES if regex.search(code))
+    return sorted(set(matches))
 
 
 def _json(data: Any) -> str:
@@ -242,7 +257,7 @@ def _normalize_clean_response(result: Dict[str, Any], values: List[str], rule: s
     return result
 
 
-def _fallback_clean_response(values: List[str], rule: str) -> Dict[str, Any]:
+def _rule_based_clean_response(values: List[str], rule: str) -> Dict[str, Any]:
     formula_map = {
         "trim": "=TRIM(A2)",
         "upper": "=UPPER(A2)",
@@ -254,25 +269,8 @@ def _fallback_clean_response(values: List[str], rule: str) -> Dict[str, Any]:
     return {
         "success": True,
         "formula": formula_map.get(rule, "=A2"),
-        "description": "Gemini chưa phản hồi, backend trả preview làm sạch theo rule nội bộ.",
+        "description": "Preview làm sạch được tính trực tiếp từ rule nội bộ trên dữ liệu thật.",
         "previewRows": [{"original": value, "cleaned": clean_value(value, rule)} for value in values[:10]],
-    }
-
-
-def _fallback_table(payload: TableBuilderRequest) -> Dict[str, Any]:
-    columns = [
-        {"name": "STT", "type": "Số", "sample": "1"},
-        {"name": "Nội dung", "type": "Văn bản", "sample": payload.description[:40] or "Công việc"},
-        {"name": "Ngày", "type": "Ngày tháng", "sample": "2026-06-04"},
-        {"name": "Trạng thái", "type": "Văn bản", "sample": "Đang xử lý"},
-    ]
-    rows = [["1", payload.description[:40] or "Công việc", "2026-06-04", "Đang xử lý"]] if payload.includeSampleData else []
-    return {
-        "tableName": "Bảng dữ liệu ExcelAI",
-        "columns": columns,
-        "formulas": [] if not payload.includeFormula else [{"col": "STT", "expr": "=ROW()-1", "desc": "Đánh số thứ tự tự động"}],
-        "rows": rows,
-        "notes": "Gemini chưa phản hồi, backend trả cấu trúc bảng fallback.",
     }
 
 
@@ -340,9 +338,13 @@ async def chat(request: Request, payload: ChatRequest, current_user: dict = Depe
         file_context = f"\nNgười dùng đang làm việc với file '{row['name']}' ({row.get('row_count', 0)} dòng, các cột: {', '.join(headers[:20])})."
     try:
         reply = await generate(_chat_prompt_from_settings(db), f"{file_context}\n\n{payload.message}", payload.history)
+    except HTTPException:
+        await mark_failed_usage(current_user["id"], "chat")
+        raise
     except Exception as exc:
         detail = getattr(exc, "detail", str(exc))
-        reply = f"Backend đã nhận yêu cầu nhưng Gemini chưa phản hồi ({detail}). Vui lòng kiểm tra GEMINI_API_KEY hoặc thử lại sau."
+        await mark_failed_usage(current_user["id"], "chat")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"AI provider chưa phản hồi: {detail}") from exc
     await log_operation(db, current_user["id"], "chat", f"AI Chat: {payload.message[:80]}")
     return {"reply": reply}
 
@@ -386,9 +388,13 @@ async def formula(request: Request, payload: FormulaRequest, current_user: dict 
     await check_and_increment(current_user["id"], db, "formula")
     try:
         result = await generate_json(FORMULA_SYSTEM_PROMPT, f"Yêu cầu: {payload.prompt}\nNgữ cảnh: {payload.context}")
+    except HTTPException:
+        await mark_failed_usage(current_user["id"], "formula")
+        raise
     except Exception as exc:
         detail = getattr(exc, "detail", str(exc))
-        result = {"formula": "=A1", "explanation": f"Gemini chưa phản hồi ({detail}). Đây là công thức fallback.", "inputExample": payload.prompt, "outputExample": "Kiểm tra lại trước khi dùng."}
+        await mark_failed_usage(current_user["id"], "formula")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"AI provider chưa phản hồi: {detail}") from exc
     await log_operation(db, current_user["id"], "formula", f"Sinh công thức: {payload.prompt[:80]}")
     return result
 
@@ -399,10 +405,13 @@ async def vba(payload: VBARequest, current_user: dict = Depends(get_current_user
     await check_and_increment(current_user["id"], db, "vba")
     try:
         result = await generate_json(VBA_SYSTEM_PROMPT, payload.prompt)
+    except HTTPException:
+        await mark_failed_usage(current_user["id"], "vba")
+        raise
     except Exception as exc:
         detail = getattr(exc, "detail", str(exc))
         await mark_failed_usage(current_user["id"], "vba")
-        result = {"code": "Sub ExcelAI_Fallback()\n    ' AI provider is temporarily unavailable.\nEnd Sub", "explanation": "AI provider is temporarily unavailable."}
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"AI provider chưa phản hồi: {detail}") from exc
     matches = _unsafe_vba_matches(result.get("code", ""))
     if matches:
         await log_operation(db, current_user["id"], "vba", f"blocked_unsafe_vba: {', '.join(matches)[:180]}")
@@ -424,10 +433,11 @@ async def data_check(payload: DataCheckRequest, current_user: dict = Depends(get
     health_score = round((valid_rows / max(1, scanned_rows)) * 100, 1)
     scan_result = {"file": row["name"], "healthScore": health_score, "scannedRows": scanned_rows, "errors": errors[:50], "statistics": build_statistics(parsed.headers, parsed.rows, parsed.row_count)}
     try:
-        narrative = await generate(DATA_CHECK_SYSTEM_PROMPT.format(scan_result=_json(scan_result)), "")
+        prompt = DATA_CHECK_SYSTEM_PROMPT.replace("{scan_result}", _json(scan_result))
+        narrative = await generate(prompt, "")
     except Exception as exc:
         detail = getattr(exc, "detail", str(exc))
-        narrative = f"Đã quét {scanned_rows} dòng và phát hiện {len(errors)} lỗi. Gemini chưa phản hồi ({detail}), nên backend trả nhận xét fallback."
+        narrative = f"Đã quét {scanned_rows} dòng dữ liệu thật và phát hiện {len(errors)} lỗi bằng rule nội bộ. AI provider chưa phản hồi: {detail}."
     await log_operation(db, current_user["id"], "checker", f"Rà soát lỗi dữ liệu: {row['name']}")
     return {"healthScore": health_score, "scannedRows": scanned_rows, "errors": errors, "aiNarrative": narrative}
 
@@ -439,13 +449,19 @@ async def clean(payload: CleanRequest, current_user: dict = Depends(get_current_
         await check_and_increment(current_user["id"], db, "clean")
         row, parsed = _load_parsed_file(db, payload.fileId, current_user)
         column_index = _index_or_400(parsed.headers, payload.column)
-        sample_data = [row_values[column_index] if column_index < len(row_values) else "" for row_values in parsed.rows[:10]]
+        source_values = [row_values[column_index] if column_index < len(row_values) else "" for row_values in parsed.rows[:10]]
         try:
-            result = await generate_json(CLEAN_SYSTEM_PROMPT.format(column=payload.column, rule=payload.rule, sample_data=_json(sample_data)), f"Hãy tạo preview làm sạch cho file {row['name']}.")
+            prompt = (
+                CLEAN_SYSTEM_PROMPT
+                .replace("{column}", payload.column)
+                .replace("{rule}", payload.rule)
+                .replace("{source_values}", _json(source_values))
+            )
+            result = await generate_json(prompt, f"Hãy tạo preview làm sạch cho file {row['name']}.")
         except Exception:
-            result = _fallback_clean_response(sample_data, payload.rule)
+            result = _rule_based_clean_response(source_values, payload.rule)
         await log_operation(db, current_user["id"], "cleaning", f"Làm sạch cột {payload.column} bằng rule {payload.rule}")
-        return _normalize_clean_response(result, sample_data, payload.rule)
+        return _normalize_clean_response(result, source_values, payload.rule)
     except HTTPException:
         raise
     except Exception as exc:
@@ -463,7 +479,7 @@ async def reconcile(payload: ReconcileRequest, current_user: dict = Depends(get_
         narrative = await generate(CHAT_SYSTEM_PROMPT, f"Tổng kết kết quả đối soát giữa {row_a['name']} và {row_b['name']}: {_json({'summary': summary, 'topDiscrepancies': discrepancies[:20]})}")
     except Exception as exc:
         detail = getattr(exc, "detail", str(exc))
-        narrative = f"Đối soát hoàn tất: {summary}. Gemini chưa phản hồi ({detail}), backend trả nhận xét fallback."
+        narrative = f"Đối soát hoàn tất trên dữ liệu thật: {summary}. AI provider chưa phản hồi: {detail}."
     await log_operation(db, current_user["id"], "reconciliation", f"Đối soát {row_a['name']} và {row_b['name']}")
     return {"summary": summary, "discrepancies": discrepancies, "aiNarrative": narrative}
 
@@ -473,20 +489,20 @@ async def autopilot(payload: AutopilotRequest, current_user: dict = Depends(get_
     _require_ai_feature(current_user, "autopilot", db)
     await check_and_increment(current_user["id"], db, "autopilot")
     try:
-        result = await generate_json(AUTOPILOT_SYSTEM_PROMPT.format(goal=payload.goal, outputs=", ".join(payload.outputs), files=", ".join(payload.files)), payload.goal)
+        prompt = (
+            AUTOPILOT_SYSTEM_PROMPT
+            .replace("{goal}", payload.goal)
+            .replace("{outputs}", ", ".join(payload.outputs))
+            .replace("{files}", ", ".join(payload.files))
+        )
+        result = await generate_json(prompt, payload.goal)
+    except HTTPException:
+        await mark_failed_usage(current_user["id"], "autopilot")
+        raise
     except Exception as exc:
         detail = getattr(exc, "detail", str(exc))
-        result = {
-            "understanding": payload.goal,
-            "steps": [
-                {"num": 1, "title": "Nhận yêu cầu", "desc": "Backend đã nhận mục tiêu tự động hóa.", "status": "completed"},
-                {"num": 2, "title": "Chuẩn bị dữ liệu", "desc": "Kiểm tra file đầu vào và output mong muốn.", "status": "pending"},
-                {"num": 3, "title": "Chạy AI", "desc": f"Gemini chưa phản hồi: {detail}", "status": "pending"},
-            ],
-            "requiredInputs": payload.files,
-            "expectedOutputs": payload.outputs,
-            "previewType": "excel",
-        }
+        await mark_failed_usage(current_user["id"], "autopilot")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"AI provider chưa phản hồi: {detail}") from exc
     await log_operation(db, current_user["id"], "autopilot", f"Lập kế hoạch Autopilot: {payload.goal[:80]}")
     return result
 
@@ -496,9 +512,19 @@ async def table_builder(payload: TableBuilderRequest, current_user: dict = Depen
     _require_ai_feature(current_user, "table_builder", db)
     await check_and_increment(current_user["id"], db, "table_builder")
     try:
-        result = await generate_json(TABLE_BUILDER_SYSTEM_PROMPT.format(description=payload.description, type=payload.type), _json({"includeFormula": payload.includeFormula, "includeSampleData": payload.includeSampleData}))
-    except Exception:
-        result = _fallback_table(payload)
+        prompt = (
+            TABLE_BUILDER_SYSTEM_PROMPT
+            .replace("{description}", payload.description)
+            .replace("{type}", payload.type)
+        )
+        result = await generate_json(prompt, _json({"includeFormula": payload.includeFormula, "includeSampleData": payload.includeSampleData}))
+    except HTTPException:
+        await mark_failed_usage(current_user["id"], "table_builder")
+        raise
+    except Exception as exc:
+        detail = getattr(exc, "detail", str(exc))
+        await mark_failed_usage(current_user["id"], "table_builder")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"AI provider chưa phản hồi: {detail}") from exc
     if not payload.includeFormula:
         result["formulas"] = []
     if not payload.includeSampleData:
@@ -519,14 +545,20 @@ async def doc_builder(payload: DocBuilderRequest, current_user: dict = Depends(g
         except Exception:
             file_context = "Có file đính kèm nhưng không đọc được nội dung."
     try:
-        result = await generate_json(DOC_BUILDER_SYSTEM_PROMPT.format(type=payload.type, facts=payload.facts, tone=payload.tone, file_context=file_context), payload.facts or payload.type)
+        prompt = (
+            DOC_BUILDER_SYSTEM_PROMPT
+            .replace("{type}", payload.type)
+            .replace("{facts}", payload.facts)
+            .replace("{tone}", payload.tone)
+            .replace("{file_context}", file_context)
+        )
+        result = await generate_json(prompt, payload.facts or payload.type)
+    except HTTPException:
+        await mark_failed_usage(current_user["id"], "doc_builder")
+        raise
     except Exception as exc:
         detail = getattr(exc, "detail", str(exc))
-        result = {
-            "title": payload.type.upper(),
-            "content": f"{payload.facts or 'Nội dung cần bổ sung.'}\n\n(Gemini chưa phản hồi: {detail})",
-            "factsUsed": [payload.facts] if payload.facts else [],
-            "checks": ["Kiểm tra lại nội dung trước khi sử dụng chính thức."],
-        }
+        await mark_failed_usage(current_user["id"], "doc_builder")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"AI provider chưa phản hồi: {detail}") from exc
     await log_operation(db, current_user["id"], "document", f"Soạn văn bản AI: {payload.type[:80]}")
     return result

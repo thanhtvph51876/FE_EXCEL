@@ -3,11 +3,13 @@ import io
 import json
 import re
 import zipfile
+import asyncio
 from datetime import datetime, timezone
 from uuid import uuid4
 
 import openpyxl
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from dependencies import get_current_user, get_db
@@ -15,6 +17,7 @@ from entitlements import tier_entitlement
 from rate_limit import enforce_user_rate_limit
 from metrics import increment_business_metric
 from services.excel_service import build_statistics, format_file_size, parse_workbook
+from services.http_headers import safe_attachment_headers
 from services.log_service import log_operation
 from services.permission_service import can_delete_file, can_read_file, can_upload_to_workspace
 from services.storage_service import StorageService
@@ -50,8 +53,20 @@ def _validate_filename(filename: str) -> None:
 
 def _validate_magic(filename: str, content: bytes) -> None:
     lower = filename.lower()
-    if lower.endswith(".xlsx") and not content.startswith(b"PK"):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File không đúng định dạng.")
+    if lower.endswith(".xlsx"):
+        if not content.startswith(b"PK"):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File không đúng định dạng.")
+        try:
+            with zipfile.ZipFile(io.BytesIO(content)) as archive:
+                names = set(archive.namelist())
+                required = {"[Content_Types].xml", "xl/workbook.xml"}
+                if not required.issubset(names):
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File Excel không có cấu trúc workbook hợp lệ.")
+                total_uncompressed = sum(info.file_size for info in archive.infolist())
+                if total_uncompressed > max(50 * 1024 * 1024, len(content) * 80):
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File Excel nén bất thường, không an toàn để xử lý.")
+        except zipfile.BadZipFile as exc:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File không đúng định dạng.") from exc
     if lower.endswith(".xls") and not content.startswith(b"\xd0\xcf\x11\xe0"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File không đúng định dạng.")
     if lower.endswith(".csv") and b"\x00" in content[:4096]:
@@ -179,8 +194,9 @@ async def upload_file(file: UploadFile = File(...), workspace_id: str | None = F
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Không tìm thấy workspace.")
     enforce_user_rate_limit(current_user["id"], "files:upload", 20, 3600)
     entitlement = tier_entitlement(current_user.get("tier"))
-    current_files = db.table("files").select("id").eq("user_id", current_user["id"]).execute().data or []
-    if len(current_files) >= int(entitlement["max_files"]):
+    count_rows = db.fetch("SELECT COUNT(*) AS cnt FROM files WHERE user_id = %s", [current_user["id"]])
+    file_count = int((count_rows[0] if count_rows else {}).get("cnt") or 0)
+    if file_count >= int(entitlement["max_files"]):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Usage limit reached for your current plan.")
     filename = file.filename or "upload.xlsx"
     _validate_filename(filename)
@@ -208,7 +224,7 @@ async def upload_file(file: UploadFile = File(...), workspace_id: str | None = F
         message = "Không thể lưu file vào local storage. Hãy kiểm tra LOCAL_STORAGE_DIR trong backend/.env."
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=message) from exc
     try:
-        parsed = parse_workbook(filename, content)
+        parsed = await asyncio.to_thread(parse_workbook, filename, content)
     except Exception as exc:
         db.table("files").insert(
             {
@@ -216,6 +232,7 @@ async def upload_file(file: UploadFile = File(...), workspace_id: str | None = F
                 "name": filename,
                 "path": storage_path,
                 "size": format_file_size(len(content)),
+                "size_bytes": len(content),
                 "row_count": 0,
                 "col_count": 0,
                 "status": "failed",
@@ -264,6 +281,7 @@ async def upload_file(file: UploadFile = File(...), workspace_id: str | None = F
         "name": filename,
         "path": storage_path,
         "size": format_file_size(len(content)),
+        "size_bytes": len(content),
         "row_count": parsed.row_count,
         "col_count": parsed.col_count,
         "status": "ready",
@@ -297,7 +315,12 @@ async def upload_file(file: UploadFile = File(...), workspace_id: str | None = F
 
 
 @router.get("")
-async def list_files(current_user: dict = Depends(get_current_user), db = Depends(get_db)):
+async def list_files(
+    current_user: dict = Depends(get_current_user),
+    db = Depends(get_db),
+    limit: int = Query(default=200, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+):
     rows = db.fetch(
         """
         SELECT DISTINCT f.*
@@ -308,8 +331,9 @@ async def list_files(current_user: dict = Depends(get_current_user), db = Depend
             AND wm.status = 'active'
         WHERE f.user_id = %s OR wm.id IS NOT NULL
         ORDER BY f.uploaded_at DESC
+        LIMIT %s OFFSET %s
         """,
-        [current_user["id"], current_user["id"]],
+        [current_user["id"], current_user["id"], limit, offset],
     )
     return [_file_payload(row) for row in rows]
 
@@ -319,10 +343,21 @@ async def preview_file(file_id: str, current_user: dict = Depends(get_current_us
     row = _get_file_for_read(db, file_id, current_user)
     try:
         content = _storage_bytes(StorageService(db).download_bytes(row["path"]))
-        parsed = parse_workbook(row["name"], content)
+        parsed = await asyncio.to_thread(parse_workbook, row["name"], content)
     except Exception as exc:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Không thể tải hoặc đọc preview tệp.") from exc
     return {"id": row["id"], "name": row["name"], "headers": parsed.headers, "rows": parsed.preview_rows, "totalRows": parsed.row_count}
+
+
+@router.get("/{file_id}/download")
+async def download_file(file_id: str, current_user: dict = Depends(get_current_user), db = Depends(get_db)):
+    row = _get_file_for_read(db, file_id, current_user)
+    content = _storage_bytes(StorageService(db).download_bytes(row["path"]))
+    return Response(
+        content=content,
+        media_type=row.get("mime_type") or "application/octet-stream",
+        headers=safe_attachment_headers(str(row.get("name") or "excelai-file.xlsx")),
+    )
 
 
 @router.patch("/{file_id}/metadata")

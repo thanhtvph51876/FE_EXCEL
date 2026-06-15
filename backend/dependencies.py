@@ -81,11 +81,14 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: PgClient = Depends(get_db),
 ) -> Dict[str, Any]:
-    if not credentials or not credentials.credentials:
+    # Accept ?token= only for direct download links. Other APIs must use Authorization.
+    query_token = request.query_params.get("token") if request.url.path.endswith("/download") else None
+    raw_token = (credentials.credentials if credentials and credentials.credentials else None) or query_token
+    if not raw_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Thiếu Bearer token.")
 
     try:
-        payload = jwt.decode(credentials.credentials, settings.jwt_secret, algorithms=["HS256"])
+        payload = jwt.decode(raw_token, settings.jwt_secret, algorithms=["HS256"])
         user_id = payload.get("sub")
         session_id = payload.get("sid")
     except JWTError as exc:

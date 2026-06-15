@@ -12,6 +12,7 @@ from entitlements import require_entitlement, tier_entitlement
 from metrics import increment_business_metric
 from models.schemas import CleanExportRequest, DocxExportRequest, PdfExportRequest, ReconcileExportRequest, TableXlsxExportRequest
 from services.excel_service import clean_value, parse_workbook, to_number
+from services.http_headers import safe_attachment_headers
 from services.log_service import log_operation
 from services.output_service import DOCX_CONTENT_TYPE, PDF_CONTENT_TYPE, XLSX_CONTENT_TYPE, build_docx, build_pdf, build_xlsx, store_output
 from services.permission_service import can_read_file, can_read_output
@@ -156,7 +157,7 @@ async def download_output(output_id: str, current_user: dict = Depends(get_curre
     return Response(
         content,
         media_type=row.get("content_type") or "application/octet-stream",
-        headers={"Content-Disposition": f"attachment; filename=\"{row.get('display_name') or 'excelai-output'}\""},
+        headers=safe_attachment_headers(str(row.get("display_name") or "excelai-output")),
     )
 
 
